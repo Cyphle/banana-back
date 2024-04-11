@@ -3,6 +3,7 @@ package main
 import (
 	"banana-back/db"
 	"banana-back/hello"
+	"banana-back/product"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/postgres"
@@ -11,10 +12,12 @@ import (
 	"time"
 )
 
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
+func mySum(xi ...int) int {
+	sum := 0
+	for _, y := range xi {
+		sum += y
+	}
+	return sum
 }
 
 func main() {
@@ -45,13 +48,13 @@ func main() {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	// Migrate the schema
-	db.AutoMigrate(&Product{})
+	db.AutoMigrate(&product.Product{})
 
 	// Create
-	db.Create(&Product{Code: "D42", Price: 100})
+	db.Create(&product.Product{Code: "D42", Price: 100})
 
 	// Read
-	var product Product
+	var product product.Product
 	db.First(&product, 1)                 // find product with integer primary key
 	db.First(&product, "code = ?", "D42") // find product with code D42
 
