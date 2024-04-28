@@ -44,7 +44,7 @@ func TestGetUser(t *testing.T) {
 	h := &handler{mockDB}
 
 	// Assertions
-	if assert.NoError(t, h.getUser(c)) {
+	if assert.NoError(t, h.GetUser(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, userJSON, rec.Body.String())
 	}

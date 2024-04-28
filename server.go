@@ -4,6 +4,7 @@ import (
 	"banana-back/db"
 	"banana-back/hello"
 	"banana-back/product"
+	"banana-back/user"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/postgres"
@@ -66,6 +67,8 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, hello.Hello()+", World!")
 	})
+
+	e.GET("/users", user.Test)
 	e.Logger.Fatal(e.Start(":1323"))
 	// END ECHO
 }

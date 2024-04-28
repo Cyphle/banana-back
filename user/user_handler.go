@@ -10,12 +10,12 @@ type (
 		Name  string `json:"name" form:"name"`
 		Email string `json:"email" form:"email"`
 	}
-	handler struct {
+	Handler struct {
 		db map[string]*User
 	}
 )
 
-func (h *handler) createUser(c echo.Context) error {
+func (h *Handler) createUser(c echo.Context) error {
 	u := new(User)
 	if err := c.Bind(u); err != nil {
 		return err
@@ -23,11 +23,15 @@ func (h *handler) createUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, u)
 }
 
-func (h *handler) getUser(c echo.Context) error {
+func (h *Handler) GetUser(c echo.Context) error {
 	email := c.Param("email")
 	user := h.db[email]
 	if user == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "user not found")
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func Test(c echo.Context) error {
+	return c.JSON(http.StatusOK, "Hello world")
 }
