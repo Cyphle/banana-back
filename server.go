@@ -1,9 +1,9 @@
 package main
 
 import (
-	"banana-back/db"
-	"banana-back/hello"
-	"banana-back/user"
+	"banana-back/sometests/db"
+	"banana-back/sometests/hello"
+	"banana-back/sometests/user"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
