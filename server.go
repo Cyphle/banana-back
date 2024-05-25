@@ -1,14 +1,5 @@
 package main
 
-import (
-	"banana-back/sometests/db"
-	"banana-back/sometests/hello"
-	"banana-back/sometests/user"
-	"fmt"
-	"github.com/labstack/echo/v4"
-	"net/http"
-)
-
 func mySum(xi ...int) int {
 	sum := 0
 	for _, y := range xi {
@@ -18,15 +9,19 @@ func mySum(xi ...int) int {
 }
 
 func main() {
-	fmt.Println("TEST")
-	fmt.Println("Accounts " + db.ToString())
 
-	db.Add(db.BankAccount{
-		Name: "My account",
-	})
+	// =============================
+	// ===> OLD TESTS TO SEtuP TOOLS
 
-	fmt.Println("Accounts now: " + db.ToString())
-	fmt.Println("END TEST")
+	//fmt.Println("TEST")
+	//fmt.Println("Accounts " + db.ToString())
+	//
+	//db.Add(db.BankAccount{
+	//	Name: "My account",
+	//})
+	//
+	//fmt.Println("Accounts now: " + db.ToString())
+	//fmt.Println("END TEST")
 
 	// GORM
 	//dsn := "host=localhost user=postgres password=postgres dbname=banana port=5432 sslmode=disable TimeZone=Europe/Paris"
@@ -78,12 +73,12 @@ func main() {
 	// END BUN
 
 	// ECHO
-	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, hello.Hello()+", World!")
-	})
-
-	e.GET("/users", user.Test)
-	e.Logger.Fatal(e.Start(":1323"))
+	//e := echo.New()
+	//e.GET("/", func(c echo.Context) error {
+	//	return c.String(http.StatusOK, hello.Hello()+", World!")
+	//})
+	//
+	//e.GET("/users", user.Test)
+	//e.Logger.Fatal(e.Start(":1323"))
 	// END ECHO
 }

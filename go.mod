@@ -5,7 +5,6 @@ go 1.22.0
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/stretchr/testify v1.9.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.9
 )
@@ -62,6 +61,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.12 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.31.0 // indirect
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.31.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
