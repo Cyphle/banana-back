@@ -3,14 +3,10 @@ package main
 import (
 	"banana-back/db"
 	"banana-back/hello"
-	"banana-back/product"
 	"banana-back/user"
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"net/http"
-	"time"
 )
 
 func mySum(xi ...int) int {
@@ -33,34 +29,53 @@ func main() {
 	fmt.Println("END TEST")
 
 	// GORM
-	dsn := "host=localhost user=postgres password=postgres dbname=banana port=5432 sslmode=disable TimeZone=Europe/Paris"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to database")
-	}
-
-	sqlDB, err := db.DB()
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	sqlDB.SetMaxIdleConns(10)
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	sqlDB.SetMaxOpenConns(100)
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	// Migrate the schema
-	db.AutoMigrate(&product.Product{})
-
-	// Create
-	db.Create(&product.Product{Code: "D42", Price: 100})
-
-	// Read
-	var product product.Product
-	db.First(&product, 1)                 // find product with integer primary key
-	db.First(&product, "code = ?", "D42") // find product with code D42
-
-	fmt.Println("Record from database")
-	fmt.Println(product)
+	//dsn := "host=localhost user=postgres password=postgres dbname=banana port=5432 sslmode=disable TimeZone=Europe/Paris"
+	//db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	//if err != nil {
+	//	panic("failed to connect to database")
+	//}
+	//
+	//sqlDB, err := db.DB()
+	//// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	//sqlDB.SetMaxIdleConns(10)
+	//// SetMaxOpenConns sets the maximum number of open connections to the database.
+	//sqlDB.SetMaxOpenConns(100)
+	//// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	//sqlDB.SetConnMaxLifetime(time.Hour)
+	//
+	//// Migrate the schema
+	//db.AutoMigrate(&product.Product{})
+	//
+	//// Create
+	//db.Create(&product.Product{Code: "D42", Price: 100})
+	//
+	//// Read
+	//var product product.Product
+	//db.First(&product, 1)                 // find product with integer primary key
+	//db.First(&product, "code = ?", "D42") // find product with code D42
+	//
+	//fmt.Println("Record from database")
+	//fmt.Println(product)
 	// END GORM
+
+	// BUN
+	//dsn := "postgres://postgres:@localhost:5432/banana?sslmode=disable"
+	//sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	//db := bun.NewDB(sqldb, pgdialect.New())
+	//
+	//// Logging queries
+	//db.AddQueryHook(bundebug.NewQueryHook(
+	//	bundebug.WithVerbose(true),
+	//	bundebug.FromEnv("BUNDEBUG"),
+	//))
+	//
+	//ctx := context.Background()
+	//res, err := db.NewSelect().ColumnExpr("1").Exec(ctx)
+	//
+	//var num int
+	//err := db.NewSelect().ColumnExpr("1").Scan(ctx, &num)
+
+	// END BUN
 
 	// ECHO
 	e := echo.New()
