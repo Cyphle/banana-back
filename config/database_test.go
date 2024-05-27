@@ -14,7 +14,7 @@ func TestDatabase_ShouldGetConnectionString(t *testing.T) {
 		DatabaseName: "postgres",
 	}
 
-	connectionString := db.getConnectionString()
+	connectionString := db.GetConnectionString()
 
 	assert.Equal(
 		t,
