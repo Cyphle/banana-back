@@ -1,5 +1,12 @@
 package main
 
+import (
+	"banana-back/config"
+	"banana-back/initializers"
+	"context"
+	"log/slog"
+)
+
 func mySum(xi ...int) int {
 	sum := 0
 	for _, y := range xi {
@@ -9,6 +16,18 @@ func mySum(xi ...int) int {
 }
 
 func main() {
+	ctx := context.Background()
+	log := slog.Default()
+
+	conf := config.Get()
+
+	log.Info("Initializing database")
+
+	_, err := initializers.InitDatabase(ctx, conf.DB)
+	if err != nil {
+		log.Error("failed to init database", "err", err)
+		return
+	}
 
 	// =============================
 	// ===> OLD TESTS TO SEtuP TOOLS

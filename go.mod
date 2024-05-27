@@ -4,7 +4,12 @@ go 1.22.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/golang-migrate/migrate/v4 v4.17.1
+	github.com/jackc/pgx/v5 v5.5.5
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/lib/pq v1.10.9
+	github.com/uptrace/bun v1.2.1
+	github.com/uptrace/bun/dialect/pgdialect v1.2.1
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.9
 )
@@ -29,14 +34,12 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-migrate/migrate/v4 v4.17.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
-	github.com/jackc/pgx/v5 v5.5.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -67,8 +70,6 @@ require (
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun v1.2.1 // indirect
-	github.com/uptrace/bun/dialect/pgdialect v1.2.1 // indirect
 	github.com/uptrace/bun/driver/pgdriver v1.2.1 // indirect
 	github.com/uptrace/bun/extra/bundebug v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

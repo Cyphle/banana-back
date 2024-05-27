@@ -1,6 +1,8 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Database struct {
 	Host         string
@@ -10,6 +12,6 @@ type Database struct {
 	DatabaseName string
 }
 
-func (d Database) getConnectionString() string {
+func (d Database) GetConnectionString() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", d.Username, d.Password, d.Host, d.Port, d.DatabaseName)
 }
