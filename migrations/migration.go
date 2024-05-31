@@ -7,3 +7,5 @@ import "embed"
 //
 //go:embed *.sql
 var FS embed.FS
+
+// To add migration file run in CLI: migrate create -ext sql -dir migrations -seq <migration name>
