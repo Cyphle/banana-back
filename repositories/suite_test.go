@@ -3,18 +3,22 @@ package repositories
 import (
 	"banana-back/migrations"
 	"context"
+	"testing"
+	"time"
+
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
-	"testing"
-	"time"
 )
 
 func TestRepository(t *testing.T) {
@@ -37,7 +41,7 @@ func (s *RepositorySuite) SetupSuite() {
 	// init container
 	pgContainer, err := postgres.RunContainer(ctx,
 		testcontainers.WithImage("docker.io/postgres:16-alpine"),
-		postgres.WithDatabase("test"),
+		postgres.WithDatabase("banana"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
 		testcontainers.WithWaitStrategy(
