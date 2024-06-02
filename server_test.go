@@ -14,7 +14,7 @@ func TestMySum(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		x := mySum(v.data...)
+		x := MySum(v.data...)
 		if x != v.answer {
 			t.Error("Expected", v.answer, "Got", x)
 		}

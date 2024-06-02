@@ -7,7 +7,7 @@ import (
 	"log/slog"
 )
 
-func mySum(xi ...int) int {
+func MySum(xi ...int) int {
 	sum := 0
 	for _, y := range xi {
 		sum += y
