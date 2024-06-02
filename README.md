@@ -6,3 +6,9 @@ Launch all tests:
 
 Launch tests of one subdirectory
 `go test repositoties/*`
+
+## TODO
+- Bun & test containers > En cours
+- Account endspoints with Echo
+- Check token against IDP genre Keycloak
+- OpenID Connect flow avec React
