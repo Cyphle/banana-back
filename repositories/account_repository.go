@@ -6,20 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/uptrace/bun"
-	"time"
 )
 
 type AccountRepository struct {
 	dbClient bun.IDB
-}
-
-type AccountEntity struct {
-	bun.BaseModel `bun:"table:accounts"`
-	ID            int64      `bun:"id,pk,autoincrement"       json:"-"`
-	Name          string     `json:"name,omitempty"`
-	CreatedAt     time.Time  `json:"-"`
-	UpdatedAt     *time.Time `json:"-"`
-	DeletedAt     *time.Time `bun:",soft_delete"              json:"-"`
 }
 
 func NewAccountRepository(dbClient bun.IDB) *AccountRepository {
@@ -50,16 +40,17 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 	}
 }
 
-/*
-
-// Create creates a new stakeholder.
-func (r *StakeholderRepository) Create(ctx context.Context, input *domain.StakeholderCreateParams) error {
-	if _, err := r.client.NewInsert().Model(input).Exec(ctx); err != nil {
+func (r *AccountRepository) Create(ctx context.Context, input *AccountEntityCreateParams) error {
+	if _, err := r.dbClient.
+		NewInsert().
+		Model(input).
+		Exec(ctx); err != nil {
 		return fmt.Errorf("failed to create stakeholder: %w", err)
 	}
 	return nil
 }
 
+/*
 // Update updates a stakeholder.
 func (r *StakeholderRepository) Update(
 	ctx context.Context,

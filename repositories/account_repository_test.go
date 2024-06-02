@@ -66,6 +66,59 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 	}
 }
 
+func (s *RepositorySuite) TestStakeholderRepository_Create() {
+	type args struct {
+		input *AccountEntityCreateParams
+	}
+	tests := []*struct {
+		name    string
+		seed    func(t *testing.T, client bun.IDB)
+		args    args
+		wantErr assert.ErrorAssertionFunc
+		want    func(t *testing.T, client bun.IDB)
+	}{
+		{
+			name: "create account",
+			seed: func(_ *testing.T, _ bun.IDB) {},
+			args: args{
+				input: &AccountEntityCreateParams{
+					Name: "Je suis un nouveau compte",
+				},
+			},
+			wantErr: assert.NoError,
+			want: func(t *testing.T, client bun.IDB) {
+				t.Helper()
+				var account AccountEntity
+				err := client.
+					NewSelect().
+					Model(&account).
+					Column("id", "name").
+					Where("id = ?", 1).
+					Scan(context.Background())
+				require.NoError(t, err)
+				assert.Equal(t, AccountEntity{
+					ID:   1,
+					Name: "Je suis un nouveau compte",
+				}, account)
+			},
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			trx, err := s.client.Begin()
+			s.Require().NoError(err)
+			defer func() {
+				s.Require().NoError(trx.Rollback())
+			}()
+			tt.seed(t, trx)
+			r := NewAccountRepository(trx)
+
+			tt.wantErr(t, r.Create(context.Background(), tt.args.input))
+			tt.want(t, trx)
+		})
+	}
+}
+
 /*
 func (s *RepositorySuite) TestStakeholderRepository_List() {
 	type args struct {
@@ -205,95 +258,6 @@ func (s *RepositorySuite) TestStakeholderRepository_List() {
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func (s *RepositorySuite) TestStakeholderRepository_Create() {
-	type args struct {
-		input *domain.StakeholderCreateParams
-	}
-	tests := []*struct {
-		name    string
-		seed    func(t *testing.T, client bun.IDB)
-		args    args
-		wantErr assert.ErrorAssertionFunc
-		want    func(t *testing.T, client bun.IDB)
-	}{
-		{
-			name: "create stakeholder",
-			seed: func(t *testing.T, client bun.IDB) {
-				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
-					ID:   10008,
-					Code: "org1",
-					Name: "Organization 1",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-			},
-			args: args{
-				input: &domain.StakeholderCreateParams{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10008,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				},
-			},
-			wantErr: assert.NoError,
-			want: func(t *testing.T, client bun.IDB) {
-				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
-					Scan(context.Background())
-				require.NoError(t, err)
-				assert.Equal(t, domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10008,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				}, stakeholder)
-			},
-		},
-		{
-			name: "organization does not exist",
-			seed: func(_ *testing.T, _ bun.IDB) {},
-			args: args{
-				input: &domain.StakeholderCreateParams{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 1,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				var pgErr *pgconn.PgError
-				return assert.ErrorAs(t, err, &pgErr) && pgErr.Code == "23503"
-			},
-			want: func(t *testing.T, client bun.IDB) {
-				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("id", "uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
-					Scan(context.Background())
-				require.Error(t, err)
-			},
-		},
-	}
-	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
-			trx, err := s.client.Begin()
-			s.Require().NoError(err)
-			defer func() {
-				s.Require().NoError(trx.Rollback())
-			}()
-			tt.seed(t, trx)
-			r := NewStakeholderRepository(trx)
-
-			tt.wantErr(t, r.Create(context.Background(), tt.args.input))
-			tt.want(t, trx)
 		})
 	}
 }
