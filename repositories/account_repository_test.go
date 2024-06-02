@@ -37,18 +37,17 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			},
 			wantErr: assert.NoError,
 		},
-		//{
-		//	name: "stakeholder does not exist",
-		//	seed: func(_ *testing.T, _ bun.IDB) {},
-		//	args: args{
-		//		uid:   uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-		//		orgID: 1,
-		//	},
-		//	want: nil,
-		//	wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-		//		return assert.ErrorIs(t, err, domain.ErrStakeholderNotFound)
-		//	},
-		//},
+		{
+			name: "account does not exist",
+			seed: func(_ *testing.T, _ bun.IDB) {},
+			args: args{
+				id: 1,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorIs(t, err, AccountNotFound)
+			},
+		},
 	}
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {

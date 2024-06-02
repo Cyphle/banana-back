@@ -28,6 +28,10 @@ func NewAccountRepository(dbClient bun.IDB) *AccountRepository {
 	}
 }
 
+var (
+	AccountNotFound = errors.New("account not found")
+)
+
 func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEntity, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
@@ -38,7 +42,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 		Scan(ctx)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		return nil, errors.New("account not found")
+		return nil, AccountNotFound
 	case err != nil:
 		return nil, fmt.Errorf("failed to query account: %w", err)
 	default:
