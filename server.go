@@ -15,19 +15,27 @@ func MySum(xi ...int) int {
 	return sum
 }
 
+type Test struct {
+	ID    int
+	Name  string
+	Hello string
+}
+
 func main() {
 	ctx := context.Background()
 	log := slog.Default()
 
 	conf := config.Get()
 
+	// Setup database
 	log.Info("Initializing database")
-
 	_, err := initializers.InitDatabase(ctx, conf.DB)
 	if err != nil {
 		log.Error("failed to init database", "err", err)
 		return
 	}
+
+	// Setup Echo
 
 	// =============================
 	// ===> OLD TESTS TO SEtuP TOOLS
