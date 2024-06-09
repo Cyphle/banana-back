@@ -45,7 +45,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				return assert.ErrorIs(t, err, AccountNotFound)
+				return assert.ErrorIs(t, err, ErrAccountNotFound)
 			},
 		},
 	}
@@ -66,7 +66,63 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 	}
 }
 
-func (s *RepositorySuite) TestStakeholderRepository_Create() {
+func (s *RepositorySuite) TestAccountRepository_List() {
+	type args struct {
+	}
+	tests := []*struct {
+		name    string
+		seed    func(t *testing.T, client bun.IDB)
+		args    args
+		want    []AccountEntity
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "list accounts",
+			seed: func(t *testing.T, client bun.IDB) {
+				t.Helper()
+				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1,
+					Name: "My account",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:   2,
+					Name: "My other account",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+			},
+			args:    args{},
+			wantErr: assert.NoError,
+			want: []AccountEntity{
+				{
+					ID:   1,
+					Name: "My account",
+				},
+				{
+					ID:   2,
+					Name: "My other account",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			trx, err := s.client.Begin()
+			s.Require().NoError(err)
+			defer func() {
+				s.Require().NoError(trx.Rollback())
+			}()
+			tt.seed(t, trx)
+			r := NewAccountRepository(trx)
+			got, err := r.List(context.Background())
+
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func (s *RepositorySuite) TestAccountRepository_Create() {
 	type args struct {
 		input *AccountEntityCreateParams
 	}
@@ -119,154 +175,10 @@ func (s *RepositorySuite) TestStakeholderRepository_Create() {
 	}
 }
 
-/*
-func (s *RepositorySuite) TestStakeholderRepository_List() {
+func (s *RepositorySuite) TestAccountRepository_Update() {
 	type args struct {
-		params *domain.StakeholderListParams
-	}
-	tests := []*struct {
-		name    string
-		seed    func(t *testing.T, client bun.IDB)
-		args    args
-		want    []domain.Stakeholder
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "list stakeholders by organization",
-			seed: func(t *testing.T, client bun.IDB) {
-				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
-					ID:   10005,
-					Code: "org1",
-					Name: "Organization 1",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Organization{
-					ID:   10006,
-					Code: "org2",
-					Name: "Organization 2",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10005,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b9"),
-					OrganizationID: 10006,
-					Properties:     []byte(`{"name": "Jane Doe"}`),
-					Roles:          []string{"user"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b0"),
-					OrganizationID: 10005,
-					Properties:     []byte(`{"name": "Jack Doe"}`),
-					Roles:          []string{"user"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-			},
-			args: args{
-				params: &domain.StakeholderListParams{
-					OrganizationID: 10005,
-				},
-			},
-			wantErr: assert.NoError,
-			want: []domain.Stakeholder{
-				{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10005,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				},
-				{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b0"),
-					OrganizationID: 10005,
-					Properties:     []byte(`{"name": "Jack Doe"}`),
-					Roles:          []string{"user"},
-				},
-			},
-		},
-		{
-			name: "list stakeholders by organization and freesearch",
-			seed: func(t *testing.T, client bun.IDB) {
-				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
-					ID:   10007,
-					Code: "org3",
-					Name: "Organization 3",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Organization{
-					ID:   10008,
-					Code: "org4",
-					Name: "Organization 4",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10007,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b9"),
-					OrganizationID: 10008,
-					Properties:     []byte(`{"name": "Jane Doe"}`),
-					Roles:          []string{"user"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b0"),
-					OrganizationID: 10007,
-					Properties:     []byte(`{"name": "Jack Doe"}`),
-					Roles:          []string{"user"},
-				}).Exec(context.Background())
-				require.NoError(t, err)
-			},
-			args: args{
-				params: &domain.StakeholderListParams{
-					OrganizationID: 10007,
-					Freesearch:     "Jack",
-				},
-			},
-			wantErr: assert.NoError,
-			want: []domain.Stakeholder{
-				{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b0"),
-					OrganizationID: 10007,
-					Properties:     []byte(`{"name": "Jack Doe"}`),
-					Roles:          []string{"user"},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
-			trx, err := s.client.Begin()
-			s.Require().NoError(err)
-			defer func() {
-				s.Require().NoError(trx.Rollback())
-			}()
-			tt.seed(t, trx)
-			r := NewStakeholderRepository(trx)
-			got, err := r.List(context.Background(), tt.args.params)
-
-			tt.wantErr(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func (s *RepositorySuite) TestStakeholderRepository_Update() {
-	type args struct {
-		uid   uuid.UUID
-		orgID int
-		input *domain.StakeholderUpdateParams
+		id    int
+		input *AccountEntityUpdateParams
 	}
 	tests := []*struct {
 		name    string
@@ -276,68 +188,54 @@ func (s *RepositorySuite) TestStakeholderRepository_Update() {
 		want    func(t *testing.T, client bun.IDB)
 	}{
 		{
-			name: "update stakeholder",
+			name: "update account",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
+				_, err := client.NewInsert().Model(&AccountEntity{
 					ID:   10009,
-					Code: "org1",
-					Name: "Organization 1",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10009,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
+					Name: "Account 1",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				uid:   uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-				orgID: 10009,
-				input: &domain.StakeholderUpdateParams{
-					Properties: []byte(`{"name": "Jane Doe"}`),
-					Roles:      []string{"user"},
+				id: 10009,
+				input: &AccountEntityUpdateParams{
+					Name: "New name",
 				},
 			},
 			wantErr: assert.NoError,
 			want: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
+				var account AccountEntity
+				err := client.NewSelect().Model(&account).
+					Column("id", "name").
+					Where("id = ?", 10009).
 					Scan(context.Background())
 				require.NoError(t, err)
-				assert.Equal(t, domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10009,
-					Properties:     []byte(`{"name": "Jane Doe"}`),
-					Roles:          []string{"user"},
-				}, stakeholder)
+				assert.Equal(t, AccountEntity{
+					ID:   10009,
+					Name: "New name",
+				}, account)
 			},
 		},
 		{
-			name: "stakeholder does not exist",
+			name: "account does not exist",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				uid:   uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-				orgID: 10009,
-				input: &domain.StakeholderUpdateParams{
-					Properties: []byte(`{"name": "Jane Doe"}`),
-					Roles:      []string{"user"},
+				id: 10009,
+				input: &AccountEntityUpdateParams{
+					Name: "New name",
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				return assert.ErrorIs(t, err, domain.ErrStakeholderNotFound)
+				return assert.ErrorIs(t, err, ErrAccountNotFound)
 			},
 			want: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("id", "uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
+				var account AccountEntity
+				err := client.NewSelect().Model(&account).
+					Column("id", "name").
+					Where("id = ?", 10009).
 					Scan(context.Background())
 				require.Error(t, err)
 			},
@@ -351,9 +249,9 @@ func (s *RepositorySuite) TestStakeholderRepository_Update() {
 				s.Require().NoError(trx.Rollback())
 			}()
 			tt.seed(t, trx)
-			r := NewStakeholderRepository(trx)
+			r := NewAccountRepository(trx)
 
-			tt.wantErr(t, r.Update(context.Background(), tt.args.uid, tt.args.orgID, tt.args.input))
+			tt.wantErr(t, r.Update(context.Background(), tt.args.id, tt.args.input))
 			tt.want(t, trx)
 		})
 	}
@@ -361,8 +259,7 @@ func (s *RepositorySuite) TestStakeholderRepository_Update() {
 
 func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 	type args struct {
-		uid   uuid.UUID
-		orgID int
+		id int
 	}
 	tests := []*struct {
 		name    string
@@ -372,77 +269,58 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 		want    func(t *testing.T, client bun.IDB)
 	}{
 		{
-			name: "delete stakeholder",
+			name: "delete account",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
-					ID:   10010,
-					Code: "org1",
-					Name: "Organization 1",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10010,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
+				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1,
+					Name: "My account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				uid:   uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-				orgID: 10010,
+				id: 1,
 			},
 			wantErr: assert.NoError,
 			want: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
+				var account AccountEntity
+				err := client.NewSelect().Model(&account).
+					Column("id", "name").
+					Where("id = ?", 1).
 					Scan(context.Background())
 				require.Error(t, err)
 			},
 		},
 		{
-			name: "stakeholder does not exist",
+			name: "account does not exist",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&domain.Organization{
-					ID:   10011,
-					Code: "org1",
-					Name: "Organization 1",
-				}).Exec(context.Background())
-				require.NoError(t, err)
-				_, err = client.NewInsert().Model(&domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10011,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
+				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1,
+					Name: "My account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				uid:   uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b9"),
-				orgID: 10011,
+				id: 2,
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				return assert.ErrorIs(t, err, domain.ErrStakeholderNotFound)
+				return assert.ErrorIs(t, err, ErrAccountNotFound)
 			},
 			want: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				var stakeholder domain.Stakeholder
-				err := client.NewSelect().Model(&stakeholder).
-					Column("uid", "organization_id", "properties", "roles").
-					Where("uid = ?", uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8")).
+				var account AccountEntity
+				err := client.NewSelect().
+					Model(&account).
+					Column("id", "name").
+					Where("id = ?", 1).
 					Scan(context.Background())
 				require.NoError(t, err)
-				assert.Equal(t, domain.Stakeholder{
-					UID:            uuid.MustParse("1ee25aa2-6165-4f16-ad35-4d5810e4a7b8"),
-					OrganizationID: 10011,
-					Properties:     []byte(`{"name": "John Doe"}`),
-					Roles:          []string{"admin"},
-				}, stakeholder)
+				assert.Equal(t, AccountEntity{
+					ID:   1,
+					Name: "My account",
+				}, account)
 			},
 		},
 	}
@@ -454,11 +332,10 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 				s.Require().NoError(trx.Rollback())
 			}()
 			tt.seed(t, trx)
-			r := NewStakeholderRepository(trx)
+			r := NewAccountRepository(trx)
 
-			tt.wantErr(t, r.Delete(context.Background(), tt.args.uid, tt.args.orgID))
+			tt.wantErr(t, r.Delete(context.Background(), tt.args.id))
 			tt.want(t, trx)
 		})
 	}
 }
-*/

@@ -19,7 +19,7 @@ func NewAccountRepository(dbClient bun.IDB) *AccountRepository {
 }
 
 var (
-	AccountNotFound = errors.New("account not found")
+	ErrAccountNotFound = errors.New("account not found")
 )
 
 func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEntity, error) {
@@ -32,12 +32,29 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 		Scan(ctx)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		return nil, AccountNotFound
+		return nil, ErrAccountNotFound
 	case err != nil:
 		return nil, fmt.Errorf("failed to query account: %w", err)
 	default:
 		return &accountEntity, nil
 	}
+}
+
+func (r *AccountRepository) List(
+	ctx context.Context,
+) ([]AccountRepository, error) {
+	var accounts []AccountRepository
+	query := r.
+		dbClient.
+		NewSelect().
+		Column("id", "name").
+		Model(&accounts)
+
+	if err := query.Scan(ctx); err != nil {
+		return nil, fmt.Errorf("failed to query accounts: %w", err)
+	}
+
+	return accounts, nil
 }
 
 func (r *AccountRepository) Create(ctx context.Context, input *AccountEntityCreateParams) error {
@@ -50,71 +67,47 @@ func (r *AccountRepository) Create(ctx context.Context, input *AccountEntityCrea
 	return nil
 }
 
-/*
-// Update updates a stakeholder.
-func (r *StakeholderRepository) Update(
+func (r *AccountRepository) Update(
 	ctx context.Context,
-	uid uuid.UUID,
-	orgID int,
-	input *domain.StakeholderUpdateParams,
+	id int,
+	input *AccountEntityUpdateParams,
 ) error {
-	res, err := r.client.NewUpdate().
-		Model(new(domain.Stakeholder)).
-		Set("roles = ?", pgdialect.Array(input.Roles)).
-		Set("properties = ?", input.Properties).
-		Where("uid = ? and organization_id = ?", uid, orgID).
+	res, err := r.
+		dbClient.
+		NewUpdate().
+		Model(new(AccountEntity)).
+		Set("name = ?", input.Name).
+		Where("id = ?", id).
 		Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to update stakeholder: %w", err)
+		return fmt.Errorf("failed to update account: %w", err)
 	}
 	rowsUpdated, err := res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("failed to get updated rows: %w", err)
 	}
 	if rowsUpdated == 0 {
-		return domain.ErrStakeholderNotFound
+		return ErrAccountNotFound
 	}
 	return nil
 }
 
-// Delete deletes a stakeholder.
-func (r *StakeholderRepository) Delete(ctx context.Context, uid uuid.UUID, orgID int) error {
-	res, err := r.client.NewDelete().
-		Model(new(domain.Stakeholder)).
-		Where("uid = ? and organization_id = ?", uid, orgID).
+func (r *AccountRepository) Delete(ctx context.Context, id int) error {
+	res, err := r.
+		dbClient.
+		NewDelete().
+		Model(new(AccountEntity)).
+		Where("id = ?", id).
 		Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to update stakeholder: %w", err)
+		return fmt.Errorf("failed to update account: %w", err)
 	}
 	rowsUpdated, err := res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("failed to get updated rows: %w", err)
 	}
 	if rowsUpdated == 0 {
-		return domain.ErrStakeholderNotFound
+		return ErrAccountNotFound
 	}
 	return nil
 }
-
-// List returns all stakeholders.
-func (r *StakeholderRepository) List(
-	ctx context.Context,
-	params *domain.StakeholderListParams,
-) ([]domain.Stakeholder, error) {
-	var stakeholders []domain.Stakeholder
-	query := r.client.NewSelect().
-		Column("uid", "properties", "roles", "organization_id").
-		Model(&stakeholders).
-		Where("organization_id = ?", params.OrganizationID)
-
-	if params.Freesearch != "" {
-		query.Where("freesearch ~* ?", strings.ReplaceAll(params.Freesearch, " ", "|"))
-	}
-
-	if err := query.Scan(ctx); err != nil {
-		return nil, fmt.Errorf("failed to query stakeholders: %w", err)
-	}
-
-	return stakeholders, nil
-}
-*/

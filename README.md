@@ -8,7 +8,7 @@ Launch tests of one subdirectory
 `go test repositoties/*`
 
 ## TODO
-- Bun & test containers > En cours
+- Bun & test containers
 - Account endspoints with Echo
 - Check token against IDP genre Keycloak
 - OpenID Connect flow avec React
