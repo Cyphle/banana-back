@@ -1,8 +1,10 @@
 package main
 
 import (
+	"banana-back/api"
 	"banana-back/config"
 	"banana-back/initializers"
+	"banana-back/repositories"
 	"context"
 	"log/slog"
 )
@@ -23,7 +25,7 @@ func main() {
 
 	// Setup database
 	log.Info("Initializing database")
-	_, err := initializers.InitDatabase(ctx, conf.DB)
+	dbClient, err := initializers.InitDatabase(ctx, conf.DB)
 	if err != nil {
 		log.Error("failed to init database", "err", err)
 		return
@@ -35,6 +37,11 @@ func main() {
 	// ===> OLD TESTS TO SEtuP TOOLS
 
 	// ECHO
+	trx, err := dbClient.Begin() // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx
+	handler := api.HttpHandler{
+		AccountRepository: repositories.NewAccountRepository(trx),
+	}
+	api.ActivateAccountRoutes(conf.WebServer, handler)
 	//e := echo.New()
 	//e.GET("/", func(c echo.Context) error {
 	//	return c.String(http.StatusOK, hello.Hello()+", World!")
