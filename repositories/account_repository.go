@@ -42,8 +42,8 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 
 func (r *AccountRepository) List(
 	ctx context.Context,
-) ([]AccountRepository, error) {
-	var accounts []AccountRepository
+) ([]AccountEntity, error) {
+	var accounts []AccountEntity
 	query := r.
 		dbClient.
 		NewSelect().

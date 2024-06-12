@@ -29,10 +29,10 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 				require.NoError(t, err)
 			},
 			args: args{
-				id: 1,
+				id: 2,
 			},
 			want: &AccountEntity{
-				ID:   1,
+				ID:   2,
 				Name: "I am an account",
 			},
 			wantErr: assert.NoError,
@@ -41,7 +41,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			name: "account does not exist",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				id: 1,
+				id: 1001,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
@@ -81,12 +81,12 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
 				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1,
+					ID:   1001,
 					Name: "My account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 				_, err = client.NewInsert().Model(&AccountEntity{
-					ID:   2,
+					ID:   1002,
 					Name: "My other account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
@@ -96,10 +96,14 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			want: []AccountEntity{
 				{
 					ID:   1,
+					Name: "Test account",
+				},
+				{
+					ID:   1001,
 					Name: "My account",
 				},
 				{
-					ID:   2,
+					ID:   1002,
 					Name: "My other account",
 				},
 			},
@@ -149,11 +153,11 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 					NewSelect().
 					Model(&account).
 					Column("id", "name").
-					Where("id = ?", 1).
+					Where("id = ?", 2).
 					Scan(context.Background())
 				require.NoError(t, err)
 				assert.Equal(t, AccountEntity{
-					ID:   1,
+					ID:   2,
 					Name: "Je suis un nouveau compte",
 				}, account)
 			},
@@ -273,13 +277,13 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
 				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1,
+					ID:   1001,
 					Name: "My account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				id: 1,
+				id: 1001,
 			},
 			wantErr: assert.NoError,
 			want: func(t *testing.T, client bun.IDB) {
@@ -287,7 +291,7 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 				var account AccountEntity
 				err := client.NewSelect().Model(&account).
 					Column("id", "name").
-					Where("id = ?", 1).
+					Where("id = ?", 1001).
 					Scan(context.Background())
 				require.Error(t, err)
 			},
@@ -297,13 +301,13 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
 				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1,
+					ID:   1001,
 					Name: "My account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				id: 2,
+				id: 1002,
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrAccountNotFound)
@@ -314,11 +318,11 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 				err := client.NewSelect().
 					Model(&account).
 					Column("id", "name").
-					Where("id = ?", 1).
+					Where("id = ?", 1001).
 					Scan(context.Background())
 				require.NoError(t, err)
 				assert.Equal(t, AccountEntity{
-					ID:   1,
+					ID:   1001,
 					Name: "My account",
 				}, account)
 			},
