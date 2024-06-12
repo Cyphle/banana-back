@@ -24,15 +24,16 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
 				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1001,
 					Name: "I am an account",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args: args{
-				id: 2,
+				id: 1001,
 			},
 			want: &AccountEntity{
-				ID:   2,
+				ID:   1001,
 				Name: "I am an account",
 			},
 			wantErr: assert.NoError,
