@@ -20,9 +20,19 @@ type SomeReceiver[T any] struct {
 	Repository RepositoryInterface[T]
 }
 
-func Other() {
-	mock := MockAccountRepository{}
-	h := SomeReceiver[string]{
-		Repository: mock,
+func NewSomeReceiver(repository RepositoryInterface[string]) SomeReceiver[string] {
+	return SomeReceiver[string]{
+		Repository: repository,
 	}
+}
+
+func Other() {
+	//mock := MockAccountRepository{}
+	//h := SomeReceiver[string]{
+	//	Repository: mock,
+	//}
+
+	// Le truc qui reçoit l interface dans sa structure peut être instantié avec un pointer d'une implémentation de l'interface
+	mock := &MockAccountRepository{}
+	pouet := NewSomeReceiver(mock)
 }
