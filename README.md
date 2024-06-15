@@ -8,7 +8,8 @@ Launch tests of one subdirectory
 `go test repositoties/*`
 
 ## TODO
-- Bun & test containers
-- Account endspoints with Echo
+- Bun & test containers > OK
+- Account endspoints with Echo > One OK
+- Bun transaction (cf // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx)
 - Check token against IDP genre Keycloak
 - OpenID Connect flow avec React
