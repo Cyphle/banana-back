@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func (h *HttpHandler) getAccounts(c echo.Context) error {
-	h.Logger.Info("Requesting all accounts")
-	accounts, _ := h.AccountRepository.List(c.Request().Context())
+func (h *HttpHandler[AccountEntity]) getAccounts(c echo.Context) error {
+	//h.Logger.Info("Requesting all accounts")
+	accounts, _ := h.Repository.List(c.Request().Context())
 	if err := c.Bind(accounts); err != nil {
 		return err
 	}
