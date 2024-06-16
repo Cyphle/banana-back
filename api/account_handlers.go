@@ -16,7 +16,6 @@ func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, accounts)
 }
 
-// TODO to be tested
 func (h *AccountHttpHandler) createAccount(c echo.Context) error {
 	h.Logger.Info("Creating an account")
 
