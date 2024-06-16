@@ -13,3 +13,4 @@ Launch tests of one subdirectory
 - Bun transaction (cf // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React
+- Makefile or taskfile

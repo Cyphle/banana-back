@@ -6,6 +6,7 @@ import (
 	"banana-back/initializers"
 	"banana-back/repositories"
 	"context"
+	"fmt"
 	"log/slog"
 )
 
@@ -38,6 +39,6 @@ func main() {
 	)
 	api.ActivateAccountRoutes(conf.WebServer, handler)
 
-	conf.WebServer.Logger.Fatal(conf.WebServer.Start(":1323"))
+	conf.WebServer.Logger.Fatal(conf.WebServer.Start(fmt.Sprintf("%s%d", ":", conf.WebServerPort)))
 	// END ECHO
 }

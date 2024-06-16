@@ -3,8 +3,9 @@ package config
 import "github.com/labstack/echo/v4"
 
 type Config struct {
-	DB        Database
-	WebServer *echo.Echo
+	DB            Database
+	WebServer     *echo.Echo
+	WebServerPort int
 }
 
 func Get() *Config {
@@ -16,7 +17,8 @@ func Get() *Config {
 			Password:     "postgres",
 			DatabaseName: "banana",
 		},
-		WebServer: echo.New(),
+		WebServer:     echo.New(),
+		WebServerPort: 8080,
 	}
 
 	return &conf
