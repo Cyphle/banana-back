@@ -6,6 +6,8 @@ import (
 )
 
 func ActivateAccountRoutes(e *echo.Echo, handler HttpHandler[repositories.AccountEntity]) {
-	//handler.Logger.Info("Activating account routes")
-	e.GET("/accounts", handler.getAccounts)
+	handler.Logger.Info("Activating account routes")
+	g := e.Group("/accounts")
+	g.GET("", handler.getAccounts)
+	g.POST("", handler.createAccount)
 }
