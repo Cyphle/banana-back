@@ -10,14 +10,6 @@ import (
 	"log/slog"
 )
 
-func MySum(xi ...int) int {
-	sum := 0
-	for _, y := range xi {
-		sum += y
-	}
-	return sum
-}
-
 func main() {
 	ctx := context.Background()
 	log := slog.Default()
