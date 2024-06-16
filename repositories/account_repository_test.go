@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"banana-back/domain/account"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -74,7 +75,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 		name    string
 		seed    func(t *testing.T, client bun.IDB)
 		args    args
-		want    []AccountEntity
+		want    []account.Account
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -94,7 +95,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			},
 			args:    args{},
 			wantErr: assert.NoError,
-			want: []AccountEntity{
+			want: []account.Account{
 				{
 					ID:   1,
 					Name: "Test account",
@@ -129,7 +130,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 
 func (s *RepositorySuite) TestAccountRepository_Create() {
 	type args struct {
-		input *AccountEntityCreateParams
+		input *account.Account
 	}
 	tests := []*struct {
 		name    string
@@ -142,7 +143,7 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 			name: "create account",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				input: &AccountEntityCreateParams{
+				input: &account.Account{
 					Name: "Je suis un nouveau compte",
 				},
 			},

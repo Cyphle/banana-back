@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"banana-back/domain/account"
 	"context"
 	"database/sql"
 	"errors"
@@ -42,26 +43,38 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 
 func (r *AccountRepository) List(
 	ctx context.Context,
-) ([]AccountEntity, error) {
-	var accounts []AccountEntity
+) ([]account.Account, error) {
+	var accountEntities []AccountEntity
 	query := r.
 		dbClient.
 		NewSelect().
 		Column("id", "name").
-		Model(&accounts)
+		Model(&accountEntities)
 
 	if err := query.Scan(ctx); err != nil {
 		return nil, fmt.Errorf("failed to query accounts: %w", err)
 	}
 
+	accounts := make([]account.Account, 0, len(accountEntities))
+	for _, accountEntity := range accountEntities {
+		accounts = append(accounts, account.Account{
+			ID:   accountEntity.ID,
+			Name: accountEntity.Name,
+		})
+	}
+
 	return accounts, nil
 }
 
-func (r *AccountRepository) Create(ctx context.Context, input *AccountEntityCreateParams) error {
+func (r *AccountRepository) Create(ctx context.Context, input *account.Account) error {
 	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		params := &AccountEntityCreateParams{
+			Name: input.Name,
+		}
+
 		if _, err := tx.
 			NewInsert().
-			Model(input).
+			Model(params).
 			Exec(ctx); err != nil {
 			return fmt.Errorf("failed to create stakeholder: %w", err)
 		}
