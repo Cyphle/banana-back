@@ -12,14 +12,14 @@ type AccountHttpHandler struct {
 	Repository repositories.Repository[domain.Account]
 }
 
-func NewAccountHttpHandler(logger *slog.Logger, repository repositories.Repository[domain.Account]) AccountHttpHandler {
-	return AccountHttpHandler{
+func NewAccountHttpHandler(logger *slog.Logger, repository repositories.Repository[domain.Account]) *AccountHttpHandler {
+	return &AccountHttpHandler{
 		Logger:     logger,
 		Repository: repository,
 	}
 }
 
-func ActivateAccountRoutes(e *echo.Echo, handler AccountHttpHandler) {
+func ActivateAccountRoutes(e *echo.Echo, handler *AccountHttpHandler) {
 	handler.Logger.Info("Activating account routes")
 	g := e.Group("/accounts")
 	g.GET("", handler.getAccounts)
