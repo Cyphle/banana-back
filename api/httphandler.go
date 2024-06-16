@@ -1,9 +1,12 @@
 package api
 
-import "banana-back/repositories"
+import (
+	"banana-back/repositories"
+	"log/slog"
+)
 
 type HttpHandler[T any] struct {
-	//	//Logger     *slog.Logger
+	Logger     *slog.Logger
 	Repository repositories.Repository[T]
 }
 

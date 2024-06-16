@@ -42,7 +42,7 @@ func main() {
 	// ECHO
 	//trx, err := dbClient.Begin() // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx
 	handler := api.HttpHandler[repositories.AccountEntity]{
-		//Logger:            log,
+		Logger:     log,
 		Repository: repositories.NewAccountRepository(dbClient),
 	}
 	api.ActivateAccountRoutes(conf.WebServer, handler)
