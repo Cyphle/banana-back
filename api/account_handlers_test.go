@@ -62,6 +62,6 @@ func TestCreateUser(t *testing.T) {
 	// Assertions
 	if assert.NoError(t, h.createAccount(c)) {
 		assert.Equal(t, http.StatusNoContent, rec.Code)
-		// TODO assert to have been called (cf https://pkg.go.dev/github.com/stretchr/testify/mock)
+		// TODO assert to have been called (cf https://jskim1991.medium.com/go-building-an-application-using-echo-framework-with-tests-controller-e4ca1187478c)
 	}
 }
