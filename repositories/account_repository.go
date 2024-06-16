@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"banana-back/domain/account"
+	"banana-back/domain"
 	"context"
 	"database/sql"
 	"errors"
@@ -43,7 +43,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEnti
 
 func (r *AccountRepository) List(
 	ctx context.Context,
-) ([]account.Account, error) {
+) ([]domain.Account, error) {
 	var accountEntities []AccountEntity
 	query := r.
 		dbClient.
@@ -55,9 +55,9 @@ func (r *AccountRepository) List(
 		return nil, fmt.Errorf("failed to query accounts: %w", err)
 	}
 
-	accounts := make([]account.Account, 0, len(accountEntities))
+	accounts := make([]domain.Account, 0, len(accountEntities))
 	for _, accountEntity := range accountEntities {
-		accounts = append(accounts, account.Account{
+		accounts = append(accounts, domain.Account{
 			ID:   accountEntity.ID,
 			Name: accountEntity.Name,
 		})
@@ -66,7 +66,7 @@ func (r *AccountRepository) List(
 	return accounts, nil
 }
 
-func (r *AccountRepository) Create(ctx context.Context, input *account.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, input *domain.Account) error {
 	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		params := &AccountEntityCreateParams{
 			Name: input.Name,

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"banana-back/domain/account"
+	"banana-back/domain"
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -15,16 +15,16 @@ import (
 type MockAccountRepository struct {
 }
 
-func (m MockAccountRepository) List(ctx context.Context) ([]account.Account, error) {
-	res := make([]account.Account, 1)
-	res[0] = account.Account{
+func (m MockAccountRepository) List(ctx context.Context) ([]domain.Account, error) {
+	res := make([]domain.Account, 1)
+	res[0] = domain.Account{
 		ID:   1,
 		Name: "Coucou",
 	}
 	return res, nil
 }
 
-func (m MockAccountRepository) Create(ctx context.Context, input *account.Account) error {
+func (m MockAccountRepository) Create(ctx context.Context, input *domain.Account) error {
 	return nil
 }
 

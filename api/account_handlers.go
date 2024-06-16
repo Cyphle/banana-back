@@ -1,7 +1,7 @@
 package api
 
 import (
-	"banana-back/domain/account"
+	"banana-back/domain"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -25,7 +25,7 @@ func (h *AccountHttpHandler) createAccount(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	account := &account.Account{
+	account := &domain.Account{
 		ID:   -1,
 		Name: u.Name,
 	}

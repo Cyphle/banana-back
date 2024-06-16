@@ -1,7 +1,7 @@
 package api
 
 import (
-	"banana-back/domain/account"
+	"banana-back/domain"
 	"banana-back/repositories"
 	"github.com/labstack/echo/v4"
 	"log/slog"
@@ -9,10 +9,10 @@ import (
 
 type AccountHttpHandler struct {
 	Logger     *slog.Logger
-	Repository repositories.Repository[account.Account]
+	Repository repositories.Repository[domain.Account]
 }
 
-func NewAccountHttpHandler(logger *slog.Logger, repository repositories.Repository[account.Account]) AccountHttpHandler {
+func NewAccountHttpHandler(logger *slog.Logger, repository repositories.Repository[domain.Account]) AccountHttpHandler {
 	return AccountHttpHandler{
 		Logger:     logger,
 		Repository: repository,
