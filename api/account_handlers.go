@@ -1,12 +1,13 @@
 package api
 
 import (
+	"banana-back/domain/account"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
-func (h *HttpHandler[Account]) getAccounts(c echo.Context) error {
+func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
 	accounts, _ := h.Repository.List(c.Request().Context())
 	if err := c.Bind(accounts); err != nil {
@@ -16,7 +17,7 @@ func (h *HttpHandler[Account]) getAccounts(c echo.Context) error {
 }
 
 // TODO to be tested
-func (h *HttpHandler[Account]) createAccount(c echo.Context) error {
+func (h *AccountHttpHandler) createAccount(c echo.Context) error {
 	h.Logger.Info("Creating an account")
 
 	u := new(CreateAccountCommandView)
@@ -24,7 +25,11 @@ func (h *HttpHandler[Account]) createAccount(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	//h.Repository.Create()
+	account := &account.Account{
+		ID:   -1,
+		Name: u.Name,
+	}
+	h.Repository.Create(c.Request().Context(), account)
 
 	fmt.Println(u)
 

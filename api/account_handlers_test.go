@@ -5,8 +5,10 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -22,9 +24,14 @@ func (m MockAccountRepository) List(ctx context.Context) ([]account.Account, err
 	return res, nil
 }
 
-func NewHttpHandlerWithMock() HttpHandler[account.Account] {
+func (m MockAccountRepository) Create(ctx context.Context, input *account.Account) error {
+	return nil
+}
+
+func NewHttpHandlerWithMock() AccountHttpHandler {
+	logger := slog.Default()
 	mock := &MockAccountRepository{}
-	return NewHttpHandler(mock)
+	return NewAccountHttpHandler(logger, mock)
 }
 
 func TestGetAccounts(t *testing.T) {
@@ -43,18 +50,18 @@ func TestGetAccounts(t *testing.T) {
 	}
 }
 
-//func TestCreateUser(t *testing.T) {
-//	// Setup
-//	e := echo.New()
-//	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(userJSON))
-//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//	rec := httptest.NewRecorder()
-//	c := e.NewContext(req, rec)
-//	h := &handler{mockDB}
-//
-//	// Assertions
-//	if assert.NoError(t, h.createUser(c)) {
-//		assert.Equal(t, http.StatusCreated, rec.Code)
-//		assert.Equal(t, userJSON, rec.Body.String())
-//	}
-//}
+func TestCreateUser(t *testing.T) {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/accounts", strings.NewReader("{ \"name\": \"John Smith\" }"))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	h := NewHttpHandlerWithMock()
+
+	// Assertions
+	if assert.NoError(t, h.createAccount(c)) {
+		assert.Equal(t, http.StatusNoContent, rec.Code)
+		// TODO assert to have been called (cf https://pkg.go.dev/github.com/stretchr/testify/mock)
+	}
+}

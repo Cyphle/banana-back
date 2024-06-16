@@ -3,7 +3,6 @@ package main
 import (
 	"banana-back/api"
 	"banana-back/config"
-	"banana-back/domain/account"
 	"banana-back/initializers"
 	"banana-back/repositories"
 	"banana-back/sometests/user"
@@ -36,18 +35,15 @@ func main() {
 	}
 
 	// ECHO
-	//trx, err := dbClient.Begin() // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx
-	handler := api.HttpHandler[account.Account]{
-		Logger:     log,
-		Repository: repositories.NewAccountRepository(dbClient),
-	}
+	handler := api.NewAccountHttpHandler(
+		log,
+		repositories.NewAccountRepository(dbClient),
+	)
 	api.ActivateAccountRoutes(conf.WebServer, handler)
 
-	//e := echo.New()
 	conf.WebServer.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-
 	conf.WebServer.GET("/users", user.Test)
 
 	conf.WebServer.Logger.Fatal(conf.WebServer.Start(":1323"))
