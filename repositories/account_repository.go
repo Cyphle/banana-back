@@ -58,13 +58,16 @@ func (r *AccountRepository) List(
 }
 
 func (r *AccountRepository) Create(ctx context.Context, input *AccountEntityCreateParams) error {
-	if _, err := r.dbClient.
-		NewInsert().
-		Model(input).
-		Exec(ctx); err != nil {
-		return fmt.Errorf("failed to create stakeholder: %w", err)
-	}
-	return nil
+	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		if _, err := tx.
+			NewInsert().
+			Model(input).
+			Exec(ctx); err != nil {
+			return fmt.Errorf("failed to create stakeholder: %w", err)
+		}
+		return nil
+	})
+	return err
 }
 
 func (r *AccountRepository) Update(
