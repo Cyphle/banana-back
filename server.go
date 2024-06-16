@@ -5,11 +5,8 @@ import (
 	"banana-back/config"
 	"banana-back/initializers"
 	"banana-back/repositories"
-	"banana-back/sometests/user"
 	"context"
-	"github.com/labstack/echo/v4"
 	"log/slog"
-	"net/http"
 )
 
 func MySum(xi ...int) int {
@@ -40,11 +37,6 @@ func main() {
 		repositories.NewAccountRepository(dbClient),
 	)
 	api.ActivateAccountRoutes(conf.WebServer, handler)
-
-	conf.WebServer.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-	conf.WebServer.GET("/users", user.Test)
 
 	conf.WebServer.Logger.Fatal(conf.WebServer.Start(":1323"))
 	// END ECHO
