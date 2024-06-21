@@ -23,7 +23,7 @@ var (
 	ErrAccountNotFound = errors.New("account not found")
 )
 
-func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*AccountEntity, error) {
+func (r *AccountRepository) FindById(ctx context.Context, id int64) (*AccountEntity, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -86,7 +86,7 @@ func (r *AccountRepository) Create(ctx context.Context, input *domain.Account) e
 func (r *AccountRepository) Update(
 	ctx context.Context,
 	id int,
-	input *AccountEntityUpdateParams,
+	input *domain.Account,
 ) error {
 	res, err := r.
 		dbClient.
@@ -108,7 +108,7 @@ func (r *AccountRepository) Update(
 	return nil
 }
 
-func (r *AccountRepository) Delete(ctx context.Context, id int) error {
+func (r *AccountRepository) Delete(ctx context.Context, id int64) error {
 	res, err := r.
 		dbClient.
 		NewDelete().

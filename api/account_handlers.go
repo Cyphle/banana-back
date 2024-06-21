@@ -2,7 +2,6 @@ package api
 
 import (
 	"banana-back/domain"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -35,7 +34,5 @@ func (h *AccountHttpHandler) createAccount(c echo.Context) error {
 	}
 	h.Repository.Create(c.Request().Context(), account)
 
-	fmt.Println(u)
-
-	return c.NoContent(http.StatusNoContent)
+	return c.JSON(http.StatusOK, account)
 }

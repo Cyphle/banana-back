@@ -18,8 +18,3 @@ type AccountEntityCreateParams struct {
 	bun.BaseModel `bun:"table:accounts"`
 	Name          string `json:"name"`
 }
-
-type AccountEntityUpdateParams struct {
-	bun.BaseModel `bun:"table:accounts"`
-	Name          string `json:"name"`
-}

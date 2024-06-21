@@ -60,7 +60,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			}()
 			tt.seed(t, trx)
 			r := NewAccountRepository(trx)
-			got, err := r.GetByID(context.Background(), tt.args.id)
+			got, err := r.FindById(context.Background(), tt.args.id)
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
