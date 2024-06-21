@@ -47,7 +47,7 @@ func TestGetAccounts(t *testing.T) {
 		// Assertions
 		if assert.NoError(t, handler.getAccounts(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, "{ data: [{ ID: 1, Name: \"coucou\"}]}", rec.Body.String())
+			assert.Equal(t, "{\"data\":[{\"id\":1,\"name\":\"Coucou\"}]}\n", rec.Body.String())
 		}
 	})
 

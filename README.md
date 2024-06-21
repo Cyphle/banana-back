@@ -9,7 +9,7 @@ Launch tests of one subdirectory
 
 ## TODO
 - Bun & test containers > OK
-- Account endspoints with Echo > One OK
+- Account endspoints with Echo > OK manque delete et update
 - Bun transaction (cf // TODO c'est pas bien cette gestion de la transaction vu qu'elle va jamais s'arrêter là. Cf https://bun.uptrace.dev/guide/transactions.html#runintx RunInTx)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React

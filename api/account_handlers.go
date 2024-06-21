@@ -10,10 +10,15 @@ import (
 func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
 	accounts, _ := h.Repository.List(c.Request().Context())
-	if err := c.Bind(accounts); err != nil {
+	response := ArrayResponse[domain.Account]{
+		Data: accounts,
+	}
+
+	if err := c.Bind(response); err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, accounts)
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (h *AccountHttpHandler) createAccount(c echo.Context) error {
