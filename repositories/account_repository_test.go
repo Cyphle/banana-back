@@ -120,7 +120,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			}()
 			tt.seed(t, trx)
 			r := NewAccountRepository(trx)
-			got, err := r.List(context.Background())
+			got, err := r.FindAll(context.Background())
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)

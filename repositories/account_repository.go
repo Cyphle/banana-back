@@ -23,7 +23,7 @@ var (
 	ErrAccountNotFound = errors.New("account not found")
 )
 
-func (r *AccountRepository) FindById(ctx context.Context, id int64) (*AccountEntity, error) {
+func (r *AccountRepository) FindById(ctx context.Context, id int64) (*domain.Account, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -37,11 +37,14 @@ func (r *AccountRepository) FindById(ctx context.Context, id int64) (*AccountEnt
 	case err != nil:
 		return nil, fmt.Errorf("failed to query account: %w", err)
 	default:
-		return &accountEntity, nil
+		return &domain.Account{
+			ID:   accountEntity.ID,
+			Name: accountEntity.Name,
+		}, nil
 	}
 }
 
-func (r *AccountRepository) List(
+func (r *AccountRepository) FindAll(
 	ctx context.Context,
 ) ([]domain.Account, error) {
 	var accountEntities []AccountEntity
@@ -85,7 +88,6 @@ func (r *AccountRepository) Create(ctx context.Context, input *domain.Account) e
 
 func (r *AccountRepository) Update(
 	ctx context.Context,
-	id int,
 	input *domain.Account,
 ) error {
 	res, err := r.
@@ -93,7 +95,7 @@ func (r *AccountRepository) Update(
 		NewUpdate().
 		Model(new(AccountEntity)).
 		Set("name = ?", input.Name).
-		Where("id = ?", id).
+		Where("id = ?", input.ID).
 		Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to update account: %w", err)

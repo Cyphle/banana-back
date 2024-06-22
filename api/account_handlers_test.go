@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestGetAccounts(t *testing.T) {
+func TestFindAccounts(t *testing.T) {
 	logger := slog.Default()
 
 	t.Run("should get accounts", func(t *testing.T) {
@@ -22,7 +22,7 @@ func TestGetAccounts(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockRep := mocks.MockAccountRepository{}
-		mockRep.On("List").Return([]domain.Account{
+		mockRep.On("FindAll").Return([]domain.Account{
 			domain.Account{
 				ID:   1,
 				Name: "Coucou",
@@ -44,7 +44,7 @@ func TestGetAccounts(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockRep := mocks.MockAccountRepository{}
-		mockRep.On("List").Return([]domain.Account{
+		mockRep.On("FindAll").Return([]domain.Account{
 			domain.Account{
 				ID:   1,
 				Name: "Coucou",
@@ -54,6 +54,34 @@ func TestGetAccounts(t *testing.T) {
 
 		handler.getAccounts(c)
 
+		mockRep.AssertExpectations(t)
+	})
+}
+
+func TestFindAccountById(t *testing.T) {
+	logger := slog.Default()
+
+	t.Run("should find one account for given id", func(t *testing.T) {
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		mockRep := mocks.MockAccountRepository{}
+		mockRep.On("FindById").Return(&domain.Account{
+			ID:   1,
+			Name: "Coucou",
+		}, nil)
+		handler := NewAccountHttpHandler(logger, &mockRep)
+
+		// Assertions
+		if assert.NoError(t, handler.findAccount(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "{\"id\":1,\"name\":\"Coucou\"}\n", rec.Body.String())
+		}
 		mockRep.AssertExpectations(t)
 	})
 }

@@ -8,16 +8,26 @@ import (
 
 func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
-	accounts, _ := h.Repository.List(c.Request().Context())
+	accounts, _ := h.Repository.FindAll(c.Request().Context())
 	response := ArrayResponse[domain.Account]{
 		Data: accounts,
 	}
 
-	if err := c.Bind(response); err != nil {
-		return err
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *AccountHttpHandler) findAccount(c echo.Context) error {
+	h.Logger.Info("Findind account {}")
+
+	var accountId AccountIdPathParam
+	err := c.Bind(&accountId)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	return c.JSON(http.StatusOK, response)
+	account, _ := h.Repository.FindById(c.Request().Context(), accountId.ID)
+
+	return c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHttpHandler) createAccount(c echo.Context) error {

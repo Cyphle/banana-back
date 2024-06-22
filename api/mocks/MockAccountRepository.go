@@ -10,7 +10,7 @@ type MockAccountRepository struct {
 	mock.Mock
 }
 
-func (m *MockAccountRepository) List(ctx context.Context) ([]domain.Account, error) {
+func (m *MockAccountRepository) FindAll(ctx context.Context) ([]domain.Account, error) {
 	args := m.Called()
 	return args[0].([]domain.Account), args.Error(1)
 }
@@ -31,5 +31,6 @@ func (m *MockAccountRepository) Update(ctx context.Context, input *domain.Accoun
 }
 
 func (m *MockAccountRepository) Delete(ctx context.Context, id int64) error {
-	return nil
+	args := m.Called()
+	return args.Error(0)
 }

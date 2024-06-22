@@ -23,5 +23,6 @@ func ActivateAccountRoutes(e *echo.Echo, handler *AccountHttpHandler) {
 	handler.Logger.Info("Activating account routes")
 	g := e.Group("/accounts")
 	g.GET("", handler.getAccounts)
+	g.GET("/:id", handler.findAccount)
 	g.POST("", handler.createAccount)
 }
