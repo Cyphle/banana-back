@@ -109,3 +109,30 @@ func TestCreateAccount(t *testing.T) {
 		mockRep.AssertExpectations(t)
 	})
 }
+
+func TestUpdateAccount(t *testing.T) {
+	logger := slog.Default()
+
+	t.Run("should update an account", func(t *testing.T) {
+		// Setup
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodPut, "/accounts", strings.NewReader("{ \"name\": \"John Smith\" }"))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		mockRep := mocks.MockAccountRepository{}
+		mockRep.On("Update").Return(nil)
+		h := NewAccountHttpHandler(logger, &mockRep)
+
+		// Assertions
+		if assert.NoError(t, h.updateAccount(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, "{\"id\":1,\"name\":\"John Smith\"}\n", rec.Body.String())
+		}
+		mockRep.AssertExpectations(t)
+	})
+}

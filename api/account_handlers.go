@@ -46,3 +46,19 @@ func (h *AccountHttpHandler) createAccount(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, account)
 }
+
+func (h *AccountHttpHandler) updateAccount(c echo.Context) error {
+	h.Logger.Info("Update an account")
+
+	u := new(UpdateAccountCommandView)
+	if err := c.Bind(u); err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+
+	h.Repository.Update(c.Request().Context(), &domain.Account{
+		ID:   u.ID,
+		Name: u.Name,
+	})
+
+	return c.JSON(http.StatusOK, u)
+}
