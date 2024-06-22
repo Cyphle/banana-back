@@ -2,8 +2,10 @@ package api
 
 import (
 	"banana-back/domain"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
 
 func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
@@ -17,13 +19,12 @@ func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 }
 
 func (h *AccountHttpHandler) findAccount(c echo.Context) error {
-	h.Logger.Info("Findind account {}")
-
 	var accountId AccountIdPathParam
 	err := c.Bind(&accountId)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
+	h.Logger.Info(fmt.Sprintf("Findind account %v", accountId))
 
 	account, _ := h.Repository.FindById(c.Request().Context(), accountId.ID)
 
@@ -61,4 +62,15 @@ func (h *AccountHttpHandler) updateAccount(c echo.Context) error {
 	})
 
 	return c.JSON(http.StatusOK, u)
+}
+
+func (h *AccountHttpHandler) deleteAccount(c echo.Context) error {
+	accountId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	h.Logger.Info(fmt.Sprintf("Deleting account %v", accountId))
+
+	if err := h.Repository.Delete(c.Request().Context(), accountId); err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+
+	return c.NoContent(http.StatusOK)
 }

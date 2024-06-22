@@ -8,11 +8,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 )
 
 func main() {
 	ctx := context.Background()
-	log := slog.Default()
+	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	conf := config.Get()
 

@@ -8,13 +8,16 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
 
-func TestFindAccounts(t *testing.T) {
-	logger := slog.Default()
+var (
+	logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+)
 
+func TestFindAccounts(t *testing.T) {
 	t.Run("should get accounts", func(t *testing.T) {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
@@ -59,8 +62,6 @@ func TestFindAccounts(t *testing.T) {
 }
 
 func TestFindAccountById(t *testing.T) {
-	logger := slog.Default()
-
 	t.Run("should find one account for given id", func(t *testing.T) {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
@@ -87,8 +88,6 @@ func TestFindAccountById(t *testing.T) {
 }
 
 func TestCreateAccount(t *testing.T) {
-	logger := slog.Default()
-
 	t.Run("should create an account", func(t *testing.T) {
 		// Setup
 		e := echo.New()
@@ -111,8 +110,6 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	logger := slog.Default()
-
 	t.Run("should update an account", func(t *testing.T) {
 		// Setup
 		e := echo.New()
@@ -132,6 +129,28 @@ func TestUpdateAccount(t *testing.T) {
 		if assert.NoError(t, h.updateAccount(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Equal(t, "{\"id\":1,\"name\":\"John Smith\"}\n", rec.Body.String())
+		}
+		mockRep.AssertExpectations(t)
+	})
+}
+
+func TestDeleteAccount(t *testing.T) {
+	t.Run("should delete an account for given id", func(t *testing.T) {
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodDelete, "/accounts", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		mockRep := mocks.MockAccountRepository{}
+		mockRep.On("Delete").Return(nil)
+		handler := NewAccountHttpHandler(logger, &mockRep)
+
+		// Assertions
+		if assert.NoError(t, handler.deleteAccount(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
 		}
 		mockRep.AssertExpectations(t)
 	})

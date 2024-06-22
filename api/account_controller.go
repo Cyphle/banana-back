@@ -26,4 +26,5 @@ func ActivateAccountRoutes(e *echo.Echo, handler *AccountHttpHandler) {
 	g.GET("/:id", handler.findAccount)
 	g.POST("", handler.createAccount)
 	g.PUT("/:id", handler.updateAccount)
+	g.DELETE("/:id", handler.deleteAccount)
 }
