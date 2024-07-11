@@ -54,6 +54,7 @@ func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
 
 		func createAccount(repository *AccountRepository, request Request)
 	*/
+	// TODO à injecte comme ça func (h *AccountHttpHandler) createAccountHandler(c echo.Context, f func() domain.Account) error
 	domain.CreateAccount(h.Repository, u)
 
 	// TODO to be deleted from here
