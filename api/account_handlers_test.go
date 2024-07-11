@@ -101,7 +101,7 @@ func TestCreateAccount(t *testing.T) {
 		h := NewAccountHttpHandler(logger, &mockRep)
 
 		// Assertions
-		if assert.NoError(t, h.createAccount(c)) {
+		if assert.NoError(t, h.createAccountHandler(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Equal(t, "{\"id\":-1,\"name\":\"John Smith\"}\n", rec.Body.String())
 		}

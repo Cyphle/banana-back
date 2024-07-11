@@ -11,8 +11,17 @@ import (
 func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
 	accounts, _ := h.Repository.FindAll(c.Request().Context())
+
+	accountViews := make([]AccountView, len(accounts))
+	for _, account := range accounts {
+		accountViews = append(accountViews, AccountView{
+			ID:   account.ID,
+			Name: account.Name,
+		})
+	}
+
 	response := ArrayResponse[domain.Account]{
-		Data: accounts,
+		Data: accountViews,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -31,19 +40,29 @@ func (h *AccountHttpHandler) findAccount(c echo.Context) error {
 	return c.JSON(http.StatusOK, account)
 }
 
-func (h *AccountHttpHandler) createAccount(c echo.Context) error {
+func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
 	h.Logger.Info("Creating an account")
 
-	u := new(CreateAccountCommandView)
+	u := new(CreateAccountRequest)
 	if err := c.Bind(u); err != nil {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
+	// TODO ici ça devrait être une couche métier qui reçoit une request, qui transforme en commande si ok et qui save dans le repo
+	/*
+		genre une fonction qu'on peut passer en paramètre du createAccountHandler pour faire de l'injection et testable
+
+		func createAccount(repository *AccountRepository, request Request)
+	*/
+	domain.CreateAccount(h.Repository, u)
+
+	// TODO to be deleted from here
 	account := &domain.Account{
 		ID:   -1,
 		Name: u.Name,
 	}
 	h.Repository.Create(c.Request().Context(), account)
+	// TODO to here
 
 	return c.JSON(http.StatusOK, account)
 }

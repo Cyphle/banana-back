@@ -1,8 +1,6 @@
 package api
 
-import "banana-back/domain"
-
-type CreateAccountCommandView struct {
+type CreateAccountRequest struct {
 	Name string `json:"name"`
 }
 
@@ -15,6 +13,11 @@ type AccountIdPathParam struct {
 	ID int64 `param:"id" query:"id"`
 }
 
+type AccountView struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 type ArrayResponse[T any] struct {
-	Data []domain.Account `json:"data"`
+	Data []AccountView `json:"data"`
 }
