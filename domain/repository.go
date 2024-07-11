@@ -9,3 +9,5 @@ type Repository[T any] interface {
 	Update(ctx context.Context, input *T) error
 	Delete(ctx context.Context, id int64) error
 }
+
+// TODO il faudrait findOneByField(fieldName, criteria) => select * from documentstorage.documents where UPPER(name) LIKE UPPER('%dpe%');
