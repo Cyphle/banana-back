@@ -257,7 +257,9 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 			tt.seed(t, trx)
 			r := NewAccountRepository(trx)
 
-			tt.wantErr(t, r.Create(context.Background(), tt.args.input))
+			secondErr := r.Create(context.Background(), tt.args.input)
+
+			tt.wantErr(t, secondErr, tt.args.input)
 			tt.want(t, trx)
 		})
 	}

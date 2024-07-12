@@ -40,6 +40,18 @@ func (h *AccountHttpHandler) findAccount(c echo.Context) error {
 	return c.JSON(http.StatusOK, account)
 }
 
+// TODO update test
+/*
+il faut une closure (curryfication) pour que ça soit utilisable
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum += x
+		return sum
+	}
+}
+*/
+//func (h *AccountHttpHandler) createAccountHandler(c echo.Context, createAccount func(domain.Repository[domain.Account], context.Context, *domain.CreateAccountCommand) (*domain.Account, error)) error {
 func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
 	h.Logger.Info("Creating an account")
 
@@ -48,24 +60,17 @@ func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	// TODO ici ça devrait être une couche métier qui reçoit une request, qui transforme en commande si ok et qui save dans le repo
-	/*
-		genre une fonction qu'on peut passer en paramètre du createAccountHandler pour faire de l'injection et testable
-
-		func createAccount(repository *AccountRepository, request Request)
-	*/
-	// TODO à injecte comme ça func (h *AccountHttpHandler) createAccountHandler(c echo.Context, f func() domain.Account) error
-	domain.CreateAccount(h.Repository, u)
-
-	// TODO to be deleted from here
-	account := &domain.Account{
-		ID:   -1,
-		Name: u.Name,
+	if createdAccount, err := domain.CreateAccount(
+		h.Repository,
+		c.Request().Context(),
+		&domain.CreateAccountCommand{
+			Name: u.Name,
+		},
+	); err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	} else {
+		return c.JSON(http.StatusCreated, createdAccount)
 	}
-	h.Repository.Create(c.Request().Context(), account)
-	// TODO to here
-
-	return c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHttpHandler) updateAccount(c echo.Context) error {
