@@ -68,6 +68,88 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 	}
 }
 
+func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
+	type args struct {
+		field string
+		value string
+	}
+	tests := []*struct {
+		name    string
+		args    args
+		seed    func(t *testing.T, client bun.IDB)
+		want    *domain.Account
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "account exists",
+			seed: func(t *testing.T, client bun.IDB) {
+				t.Helper()
+				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1001,
+					Name: "I am an account",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+			},
+			args: args{
+				field: "name",
+				value: "I am an account",
+			},
+			want: &domain.Account{
+				ID:   1001,
+				Name: "I am an account",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "account exists with case insensitive",
+			seed: func(t *testing.T, client bun.IDB) {
+				t.Helper()
+				_, err := client.NewInsert().Model(&AccountEntity{
+					ID:   1001,
+					Name: "I am an account",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+			},
+			args: args{
+				field: "name",
+				value: "I am an Account",
+			},
+			want: &domain.Account{
+				ID:   1001,
+				Name: "I am an account",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "account does not exist",
+			seed: func(_ *testing.T, _ bun.IDB) {},
+			args: args{
+				field: "name",
+				value: "I am an account",
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrAccountNotFound)
+			},
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			trx, err := s.client.Begin()
+			s.Require().NoError(err)
+			defer func() {
+				s.Require().NoError(trx.Rollback())
+			}()
+			tt.seed(t, trx)
+			r := NewAccountRepository(trx)
+			got, err := r.FindOneByField(context.Background(), tt.args.field, tt.args.value)
+
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func (s *RepositorySuite) TestAccountRepository_List() {
 	type args struct {
 	}
@@ -184,7 +266,7 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 func (s *RepositorySuite) TestAccountRepository_Update() {
 	type args struct {
 		id    int
-		input *AccountEntityUpdateParams
+		input *domain.Account
 	}
 	tests := []*struct {
 		name    string
@@ -205,7 +287,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			},
 			args: args{
 				id: 10009,
-				input: &AccountEntityUpdateParams{
+				input: &domain.Account{
 					Name: "New name",
 				},
 			},
@@ -229,7 +311,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
 				id: 10009,
-				input: &AccountEntityUpdateParams{
+				input: &domain.Account{
 					Name: "New name",
 				},
 			},
@@ -257,7 +339,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			tt.seed(t, trx)
 			r := NewAccountRepository(trx)
 
-			tt.wantErr(t, r.Update(context.Background(), tt.args.id, tt.args.input))
+			tt.wantErr(t, r.Update(context.Background(), tt.args.input))
 			tt.want(t, trx)
 		})
 	}
@@ -265,7 +347,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 
 func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 	type args struct {
-		id int
+		id int64
 	}
 	tests := []*struct {
 		name    string

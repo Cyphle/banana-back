@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/uptrace/bun"
+	"strings"
 )
 
 type AccountRepository struct {
@@ -30,6 +31,27 @@ func (r *AccountRepository) FindById(ctx context.Context, id int64) (*domain.Acc
 		Column("id", "name").
 		Model(&accountEntity).
 		Where("id = ?", id).
+		Scan(ctx)
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return nil, ErrAccountNotFound
+	case err != nil:
+		return nil, fmt.Errorf("failed to query account: %w", err)
+	default:
+		return &domain.Account{
+			ID:   accountEntity.ID,
+			Name: accountEntity.Name,
+		}, nil
+	}
+}
+
+func (r *AccountRepository) FindOneByField(ctx context.Context, field string, value string) (*domain.Account, error) {
+	var accountEntity AccountEntity
+	err := r.dbClient.
+		NewSelect().
+		Column("id", "name").
+		Model(&accountEntity).
+		Where("UPPER("+field+") = ?", strings.ToUpper(value)).
 		Scan(ctx)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
