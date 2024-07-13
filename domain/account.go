@@ -19,7 +19,5 @@ func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Ac
 		return nil, fmt.Errorf("name already exists")
 	}
 
-	return &Account{
-		Name: command.Name,
-	}, nil
+	return &Account{Name: command.Name}, nil
 }
