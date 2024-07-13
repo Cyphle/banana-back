@@ -312,8 +312,8 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			name: "account does not exist",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				id: 10009,
 				input: &domain.Account{
+					ID:   10009,
 					Name: "New name",
 				},
 			},

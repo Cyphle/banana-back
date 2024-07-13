@@ -12,7 +12,7 @@ func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
 	accounts, _ := h.Repository.FindAll(c.Request().Context())
 
-	accountViews := make([]AccountView, len(accounts))
+	var accountViews []AccountView
 	for _, account := range accounts {
 		accountViews = append(accountViews, AccountView{
 			ID:   account.ID,
