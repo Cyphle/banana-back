@@ -20,6 +20,15 @@ func (m *MockAccountRepository) FindById(ctx context.Context, id int64) (*domain
 	return args[0].(*domain.Account), args.Error(1)
 }
 
+func (m *MockAccountRepository) FindOneByField(ctx context.Context, field string, value string) (*domain.Account, error) {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	} else {
+		return args[0].(*domain.Account), args.Error(1)
+	}
+}
+
 func (m *MockAccountRepository) Create(ctx context.Context, input *domain.Account) error {
 	args := m.Called()
 	return args.Error(0)

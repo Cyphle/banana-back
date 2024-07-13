@@ -17,7 +17,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 		name    string
 		args    args
 		seed    func(t *testing.T, client bun.IDB)
-		want    *AccountEntity
+		want    *domain.Account
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -33,7 +33,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			args: args{
 				id: 1001,
 			},
-			want: &AccountEntity{
+			want: &domain.Account{
 				ID:   1001,
 				Name: "I am an account",
 			},
@@ -60,6 +60,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			}()
 			tt.seed(t, trx)
 			r := NewAccountRepository(trx)
+
 			got, err := r.FindById(context.Background(), tt.args.id)
 
 			tt.wantErr(t, err)
@@ -342,6 +343,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			r := NewAccountRepository(trx)
 
 			tt.wantErr(t, r.Update(context.Background(), tt.args.input))
+
 			tt.want(t, trx)
 		})
 	}

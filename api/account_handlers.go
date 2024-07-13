@@ -2,7 +2,6 @@ package api
 
 import (
 	"banana-back/domain"
-	"context"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -41,8 +40,7 @@ func (h *AccountHttpHandler) findAccount(c echo.Context) error {
 	return c.JSON(http.StatusOK, account)
 }
 
-// TODO update test
-func (h *AccountHttpHandler) createAccountHandler(createAccount func(domain.Repository[domain.Account], context.Context, *domain.CreateAccountCommand) (*domain.Account, error)) func(echo.Context) error {
+func (h *AccountHttpHandler) createAccountHandler(createAccount func(command *domain.CreateAccountCommand, existingAccount *domain.Account) (*domain.Account, error)) func(echo.Context) error {
 	return func(c echo.Context) error {
 		h.Logger.Info("Creating an account")
 
@@ -51,40 +49,27 @@ func (h *AccountHttpHandler) createAccountHandler(createAccount func(domain.Repo
 			return c.String(http.StatusBadRequest, "bad request")
 		}
 
-		if createdAccount, err := createAccount(
-			h.Repository,
-			c.Request().Context(),
-			&domain.CreateAccountCommand{
-				Name: u.Name,
-			},
+		existingAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", u.Name)
+
+		if accountToCreate, err := createAccount(
+			&domain.CreateAccountCommand{Name: u.Name},
+			existingAccount,
 		); err != nil {
-			return c.String(http.StatusBadRequest, "bad request")
+			h.Logger.Error("failed to create an account: %w", err)
+			return c.String(http.StatusBadRequest, err.Error())
 		} else {
-			return c.JSON(http.StatusCreated, createdAccount)
+			if err := h.Repository.Create(c.Request().Context(), accountToCreate); err != nil {
+				return c.JSON(http.StatusInternalServerError, fmt.Errorf("failed to create account: %w", err))
+			} else {
+				createdAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", accountToCreate.Name)
+				return c.JSON(http.StatusCreated, AccountView{
+					ID:   createdAccount.ID,
+					Name: createdAccount.Name,
+				})
+			}
 		}
 	}
 }
-
-//func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
-//	h.Logger.Info("Creating an account")
-//
-//	u := new(CreateAccountRequest)
-//	if err := c.Bind(u); err != nil {
-//		return c.String(http.StatusBadRequest, "bad request")
-//	}
-//
-//	if createdAccount, err := domain.CreateAccount(
-//		h.Repository,
-//		c.Request().Context(),
-//		&domain.CreateAccountCommand{
-//			Name: u.Name,
-//		},
-//	); err != nil {
-//		return c.String(http.StatusBadRequest, "bad request")
-//	} else {
-//		return c.JSON(http.StatusCreated, createdAccount)
-//	}
-//}
 
 func (h *AccountHttpHandler) updateAccount(c echo.Context) error {
 	h.Logger.Info("Update an account")

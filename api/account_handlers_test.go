@@ -3,6 +3,7 @@ package api
 import (
 	"banana-back/api/mocks"
 	"banana-back/domain"
+	"banana-back/repositories"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"log/slog"
@@ -97,13 +98,21 @@ func TestCreateAccount(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockRep := mocks.MockAccountRepository{}
+		mockRep.On("FindOneByField").Return(
+			nil,
+			repositories.ErrAccountNotFound,
+		).Once()
+		mockRep.On("FindOneByField").Return(&domain.Account{
+			ID:   1,
+			Name: "John Smith",
+		}, nil).Once()
 		mockRep.On("Create").Return(nil)
 		h := NewAccountHttpHandler(logger, &mockRep)
 
 		// Assertions
-		if assert.NoError(t, h.createAccountHandler(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, "{\"id\":-1,\"name\":\"John Smith\"}\n", rec.Body.String())
+		if assert.NoError(t, h.createAccountHandler(domain.CreateAccount)(c)) {
+			assert.Equal(t, http.StatusCreated, rec.Code)
+			assert.Equal(t, "{\"id\":1,\"name\":\"John Smith\"}\n", rec.Body.String())
 		}
 		mockRep.AssertExpectations(t)
 	})
