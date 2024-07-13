@@ -9,7 +9,7 @@ Launch tests of one subdirectory
 
 ## TODO
 - Bun & test containers > OK
-- Account endspoints with Echo > OK manque delete et update
+- Account endspoints with Echo > OK
 - Bun transaction 
   - OK dans les repo. 
   - Peut mieux faire et englober tout la request. Genre démarrer une transaction dans l'adapteur et la faire transiter puis l'arrêter
@@ -17,3 +17,4 @@ Launch tests of one subdirectory
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React
 - Makefile or taskfile
+- Swagger
