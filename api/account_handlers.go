@@ -37,7 +37,10 @@ func (h *AccountHttpHandler) findAccount(c echo.Context) error {
 
 	account, _ := h.Repository.FindById(c.Request().Context(), accountId.ID)
 
-	return c.JSON(http.StatusOK, account)
+	return c.JSON(http.StatusOK, AccountView{
+		ID:   account.ID,
+		Name: account.Name,
+	})
 }
 
 func (h *AccountHttpHandler) createAccountHandler(createAccount func(command *domain.CreateAccountCommand, existingAccount *domain.Account) (*domain.Account, error)) func(echo.Context) error {

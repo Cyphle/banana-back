@@ -268,7 +268,6 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 
 func (s *RepositorySuite) TestAccountRepository_Update() {
 	type args struct {
-		id    int
 		input *domain.Account
 	}
 	tests := []*struct {
@@ -289,8 +288,8 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 				require.NoError(t, err)
 			},
 			args: args{
-				id: 10009,
 				input: &domain.Account{
+					ID:   10009,
 					Name: "New name",
 				},
 			},
