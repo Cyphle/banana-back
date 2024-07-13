@@ -27,7 +27,7 @@ func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (h *AccountHttpHandler) findAccount(c echo.Context) error {
+func (h *AccountHttpHandler) findAccountHandler(c echo.Context) error {
 	var accountId AccountIdPathParam
 	err := c.Bind(&accountId)
 	if err != nil {
@@ -43,33 +43,32 @@ func (h *AccountHttpHandler) findAccount(c echo.Context) error {
 	})
 }
 
-func (h *AccountHttpHandler) createAccountHandler(createAccount func(command *domain.CreateAccountCommand, existingAccount *domain.Account) (*domain.Account, error)) func(echo.Context) error {
-	return func(c echo.Context) error {
-		h.Logger.Info("Creating an account")
+func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
+	h.Logger.Info("Creating an account")
 
-		u := new(CreateAccountRequest)
-		if err := c.Bind(u); err != nil {
-			return c.String(http.StatusBadRequest, "bad request")
-		}
+	u := new(CreateAccountRequest)
+	if err := c.Bind(u); err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
 
-		existingAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", u.Name)
+	existingAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", u.Name)
 
-		if accountToCreate, err := createAccount(
-			&domain.CreateAccountCommand{Name: u.Name},
-			existingAccount,
-		); err != nil {
-			h.Logger.Error("failed to create an account: %w", err)
-			return c.String(http.StatusBadRequest, err.Error())
+	// As domain is pure functions only, no need to inject as it does not make any side effect
+	if accountToCreate, err := domain.CreateAccount(
+		&domain.CreateAccountCommand{Name: u.Name},
+		existingAccount,
+	); err != nil {
+		h.Logger.Error("failed to create an account: %w", err)
+		return c.String(http.StatusBadRequest, err.Error())
+	} else {
+		if err := h.Repository.Create(c.Request().Context(), accountToCreate); err != nil {
+			return c.JSON(http.StatusInternalServerError, fmt.Errorf("failed to create account: %w", err))
 		} else {
-			if err := h.Repository.Create(c.Request().Context(), accountToCreate); err != nil {
-				return c.JSON(http.StatusInternalServerError, fmt.Errorf("failed to create account: %w", err))
-			} else {
-				createdAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", accountToCreate.Name)
-				return c.JSON(http.StatusCreated, AccountView{
-					ID:   createdAccount.ID,
-					Name: createdAccount.Name,
-				})
-			}
+			createdAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", accountToCreate.Name)
+			return c.JSON(http.StatusCreated, AccountView{
+				ID:   createdAccount.ID,
+				Name: createdAccount.Name,
+			})
 		}
 	}
 }

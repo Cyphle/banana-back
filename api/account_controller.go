@@ -22,9 +22,9 @@ func ActivateAccountRoutes(e *echo.Echo, handler *AccountHttpHandler) {
 	handler.Logger.Info("Activating account routes")
 	g := e.Group("/accounts")
 	g.GET("", handler.getAccounts)
-	g.GET("/:id", handler.findAccount)
+	g.GET("/:id", handler.findAccountHandler)
 	// TODO update here
-	g.POST("", handler.createAccountHandler(domain.CreateAccount))
+	g.POST("", handler.createAccountHandler)
 	g.PUT("/:id", handler.updateAccount)
 	g.DELETE("/:id", handler.deleteAccount)
 }

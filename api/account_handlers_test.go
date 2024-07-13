@@ -80,7 +80,7 @@ func TestFindAccountById(t *testing.T) {
 		handler := NewAccountHttpHandler(logger, &mockRep)
 
 		// Assertions
-		if assert.NoError(t, handler.findAccount(c)) {
+		if assert.NoError(t, handler.findAccountHandler(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Equal(t, "{\"id\":1,\"name\":\"Coucou\"}\n", rec.Body.String())
 		}
@@ -110,7 +110,7 @@ func TestCreateAccount(t *testing.T) {
 		h := NewAccountHttpHandler(logger, &mockRep)
 
 		// Assertions
-		if assert.NoError(t, h.createAccountHandler(domain.CreateAccount)(c)) {
+		if assert.NoError(t, h.createAccountHandler(c)) {
 			assert.Equal(t, http.StatusCreated, rec.Code)
 			assert.Equal(t, "{\"id\":1,\"name\":\"John Smith\"}\n", rec.Body.String())
 		}
