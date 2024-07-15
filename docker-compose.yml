@@ -10,5 +10,25 @@ services:
       - "5432:5432"
     volumes:
       - bananapgdata:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.1
+    command:
+      - start-dev # for testing purposes
+      - --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+#    volumes:
+#      - ./keycloak/realms/stonal.json:/opt/keycloak/data/import/stonal.json
+#      - ./keycloak/themes/stonal:/opt/keycloak/themes/stonal
+#      - ./keycloak/vendor/keycloak-stonal-spi-20.0.1.jar:/opt/keycloak/providers/keycloak-stonal-spi-20.0.1.jar
+#      - ./keycloak/vendor/bcrypt-0.9.0.jar:/opt/keycloak/providers/bcrypt-0.9.0.jar
+#      - ./keycloak/vendor/bytes-1.3.0.jar:/opt/keycloak/providers/bytes-1.3.0.jar
+    ports:
+      - "8180:8080"
+    networks:
+      - avatar
+
 volumes:
   bananapgdata:
