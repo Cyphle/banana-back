@@ -12,7 +12,7 @@ func Get() *Config {
 	conf := Config{
 		DB: Database{
 			Host:         "localhost",
-			Port:         5432,
+			Port:         5433,
 			Username:     "postgres",
 			Password:     "postgres",
 			DatabaseName: "banana",
