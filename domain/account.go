@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"google.golang.org/genproto/googleapis/type/date"
 )
 
 type Account struct {
@@ -30,6 +31,17 @@ func AddLineToAccount(account *Account, command *AddAccountLineCommand) error {
 		Description:     command.Description,
 		Amount:          command.Amount,
 	})
+
+	return nil
+}
+
+func UpdateApplicationDateOfLine(account *Account, lineId int64, date *date.Date) error {
+	for i, line := range account.Lines {
+		if line.ID == lineId {
+			account.Lines[i].ApplicationDate = date
+			break
+		}
+	}
 
 	return nil
 }

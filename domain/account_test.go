@@ -82,4 +82,78 @@ func TestManagingLinesInAccount(t *testing.T) {
 			&account,
 		)
 	})
+
+	t.Run("should add application date to a line of an account", func(t *testing.T) {
+		amount, _ := decimal.NewFromString("10.3")
+		account := Account{
+			Name: "My new account",
+			Lines: []AccountLine{
+				{
+					ID:   1,
+					Type: Expense,
+					EventDate: &date.Date{
+						Year:  2024,
+						Month: 7,
+						Day:   25,
+					},
+					Description: "Some expense",
+					Amount:      amount,
+				},
+				{
+					ID:   2,
+					Type: Expense,
+					EventDate: &date.Date{
+						Year:  2024,
+						Month: 7,
+						Day:   25,
+					},
+					Description: "Some expense",
+					Amount:      amount,
+				},
+			},
+		}
+
+		UpdateApplicationDateOfLine(&account, 2, &date.Date{
+			Year:  2024,
+			Month: 7,
+			Day:   29,
+		})
+
+		assert.Equal(
+			t,
+			&Account{
+				Name: "My new account",
+				Lines: []AccountLine{
+					{
+						ID:   1,
+						Type: Expense,
+						EventDate: &date.Date{
+							Year:  2024,
+							Month: 7,
+							Day:   25,
+						},
+						Description: "Some expense",
+						Amount:      amount,
+					},
+					{
+						ID:   2,
+						Type: Expense,
+						EventDate: &date.Date{
+							Year:  2024,
+							Month: 7,
+							Day:   25,
+						},
+						ApplicationDate: &date.Date{
+							Year:  2024,
+							Month: 7,
+							Day:   29,
+						},
+						Description: "Some expense",
+						Amount:      amount,
+					},
+				},
+			},
+			&account,
+		)
+	})
 }
