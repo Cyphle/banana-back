@@ -13,7 +13,6 @@ type CreateAccountCommand struct {
 	Name string
 }
 
-// TODO to be tested
 func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Account, error) {
 	if existingAccount != nil {
 		return nil, fmt.Errorf("name already exists")

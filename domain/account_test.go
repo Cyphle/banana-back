@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreateAccount(t *testing.T) {
-	t.Run("should validate that account does not already exists and return a command", func(t *testing.T) {
+	t.Run("should validate that account does not already exists and returns an account to create", func(t *testing.T) {
 		command := CreateAccountCommand{
 			Name: "My new account",
 		}
@@ -16,7 +16,9 @@ func TestCreateAccount(t *testing.T) {
 
 		assert.Equal(
 			t,
-			&Account{Name: "My new account"},
+			&Account{
+				Name: "My new account",
+			},
 			result,
 		)
 	})
