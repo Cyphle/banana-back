@@ -5,8 +5,9 @@ import (
 )
 
 type Account struct {
-	ID   int64
-	Name string
+	ID    int64
+	Name  string
+	Lines []AccountLine
 }
 
 type CreateAccountCommand struct {
@@ -19,4 +20,16 @@ func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Ac
 	}
 
 	return &Account{Name: command.Name}, nil
+}
+
+func AddLineToAccount(account *Account, command *AddAccountLineCommand) error {
+	account.Lines = append(account.Lines, AccountLine{
+		Type:            command.Type,
+		EventDate:       command.EventDate,
+		ApplicationDate: command.ApplicationDate,
+		Description:     command.Description,
+		Amount:          command.Amount,
+	})
+
+	return nil
 }
