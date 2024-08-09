@@ -7,6 +7,13 @@ Launch all tests:
 Launch tests of one subdirectory
 `go test repositoties/*`
 
+## Commands
+- To add migration file run in CLI:
+`migrate create -ext sql -dir migrations -seq <migration name>`
+
+## Docs
+- https://github.com/golang-migrate/migrate/blob/master/GETTING_STARTED.md
+
 ## TODO
 - Bun & test containers > OK
 - Account endspoints with Echo > OK
