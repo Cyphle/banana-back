@@ -23,5 +23,6 @@ Launch tests of one subdirectory
   - Par exemple ne plus faire que les repos ont déjà un client database mais requiert pour chaque fonction une transaction (moins pratique par contre)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React et le back récupère le token (valide le jwt)
+- https://pkg.go.dev/github.com/coreos/go-oidc/v3/oidc
 - Makefile or taskfile
 - Swagger
