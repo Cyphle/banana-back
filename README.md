@@ -22,6 +22,6 @@ Launch tests of one subdirectory
   - Peut mieux faire et englober tout la request. Genre démarrer une transaction dans l'adapteur et la faire transiter puis l'arrêter
   - Par exemple ne plus faire que les repos ont déjà un client database mais requiert pour chaque fonction une transaction (moins pratique par contre)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
-- OpenID Connect flow avec React
+- OpenID Connect flow avec React et le back récupère le token (valide le jwt)
 - Makefile or taskfile
 - Swagger
