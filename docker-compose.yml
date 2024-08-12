@@ -21,11 +21,7 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     volumes:
-      - ./keycloak/realms/stonal.json:/opt/keycloak/data/import/stonal.json
-      - ./keycloak/themes/stonal:/opt/keycloak/themes/stonal
-      - ./keycloak/vendor/keycloak-stonal-spi-20.0.1.jar:/opt/keycloak/providers/keycloak-stonal-spi-20.0.1.jar
-      - ./keycloak/vendor/bcrypt-0.9.0.jar:/opt/keycloak/providers/bcrypt-0.9.0.jar
-      - ./keycloak/vendor/bytes-1.3.0.jar:/opt/keycloak/providers/bytes-1.3.0.jar
+      - ./keycloak/realms/banana.json:/opt/keycloak/data/import/banana.json
     ports:
       - "8181:8080"
     networks:
