@@ -22,9 +22,8 @@ Launch tests of one subdirectory
   - Peut mieux faire et englober tout la request. Genre démarrer une transaction dans l'adapteur et la faire transiter puis l'arrêter
   - Par exemple ne plus faire que les repos ont déjà un client database mais requiert pour chaque fonction une transaction (moins pratique par contre)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
-  - Va falloir remettre bcrypt dans keycloak
 - OpenID Connect flow avec React et le back récupère le token (valide le jwt)
-  - https://pkg.go.dev/github.com/coreos/go-oidc/v3/oidc
-  - https://pkg.go.dev/github.com/coreos/go-oidc/v3/oidc
+  - https://github.com/zitadel/oidc?tab=readme-ov-file
+  - https://www.alexedwards.net/blog/working-with-cookies-in-go
 - Makefile or taskfile
 - Swagger
