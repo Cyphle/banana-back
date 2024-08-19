@@ -23,8 +23,9 @@ Launch tests of one subdirectory
   - Par exemple ne plus faire que les repos ont déjà un client database mais requiert pour chaque fonction une transaction (moins pratique par contre)
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React et le back récupère le token (valide le jwt)
-  - https://github.com/zitadel/oidc?tab=readme-ov-file
+  - https://github.com/zitadel/oidc?tab=readme-ov-file => tout est pas clair. Genre c'est quoi le Keyfile
   - https://github.com/alexedwards/scs?tab=readme-ov-file#configuring-session-behavior
   - https://www.alexedwards.net/blog/working-with-cookies-in-go
+  - Il faut lire les specs de OAuth2 et OIDC (& PKCE & JWT Profile)
 - Makefile or taskfile
 - Swagger
