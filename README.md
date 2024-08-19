@@ -24,6 +24,7 @@ Launch tests of one subdirectory
 - Check token against IDP genre Keycloak (cf middleware et group middlewares)
 - OpenID Connect flow avec React et le back récupère le token (valide le jwt)
   - https://github.com/zitadel/oidc?tab=readme-ov-file
+  - https://github.com/alexedwards/scs?tab=readme-ov-file#configuring-session-behavior
   - https://www.alexedwards.net/blog/working-with-cookies-in-go
 - Makefile or taskfile
 - Swagger
