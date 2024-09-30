@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"banana-back/domain"
+	"banana-back/domain/account"
 	"context"
 	"database/sql"
 	"errors"
@@ -24,7 +24,7 @@ var (
 	ErrAccountNotFound = errors.New("account not found")
 )
 
-func (r *AccountRepository) FindById(ctx context.Context, id int64) (*domain.Account, error) {
+func (r *AccountRepository) FindById(ctx context.Context, id int64) (*account.Account, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -38,14 +38,14 @@ func (r *AccountRepository) FindById(ctx context.Context, id int64) (*domain.Acc
 	case err != nil:
 		return nil, fmt.Errorf("failed to query account: %w", err)
 	default:
-		return &domain.Account{
+		return &account.Account{
 			ID:   accountEntity.ID,
 			Name: accountEntity.Name,
 		}, nil
 	}
 }
 
-func (r *AccountRepository) FindOneByField(ctx context.Context, field string, value string) (*domain.Account, error) {
+func (r *AccountRepository) FindOneByField(ctx context.Context, field string, value string) (*account.Account, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -59,7 +59,7 @@ func (r *AccountRepository) FindOneByField(ctx context.Context, field string, va
 	case err != nil:
 		return nil, fmt.Errorf("failed to query account: %w", err)
 	default:
-		return &domain.Account{
+		return &account.Account{
 			ID:   accountEntity.ID,
 			Name: accountEntity.Name,
 		}, nil
@@ -68,7 +68,7 @@ func (r *AccountRepository) FindOneByField(ctx context.Context, field string, va
 
 func (r *AccountRepository) FindAll(
 	ctx context.Context,
-) ([]domain.Account, error) {
+) ([]account.Account, error) {
 	var accountEntities []AccountEntity
 	query := r.
 		dbClient.
@@ -80,9 +80,9 @@ func (r *AccountRepository) FindAll(
 		return nil, fmt.Errorf("failed to query accounts: %w", err)
 	}
 
-	accounts := make([]domain.Account, 0, len(accountEntities))
+	accounts := make([]account.Account, 0, len(accountEntities))
 	for _, accountEntity := range accountEntities {
-		accounts = append(accounts, domain.Account{
+		accounts = append(accounts, account.Account{
 			ID:   accountEntity.ID,
 			Name: accountEntity.Name,
 		})
@@ -91,7 +91,7 @@ func (r *AccountRepository) FindAll(
 	return accounts, nil
 }
 
-func (r *AccountRepository) Create(ctx context.Context, input *domain.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, input *account.Account) error {
 	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		params := &AccountEntityCreateParams{
 			Name: input.Name,
@@ -110,7 +110,7 @@ func (r *AccountRepository) Create(ctx context.Context, input *domain.Account) e
 
 func (r *AccountRepository) Update(
 	ctx context.Context,
-	input *domain.Account,
+	input *account.Account,
 ) error {
 	res, err := r.
 		dbClient.

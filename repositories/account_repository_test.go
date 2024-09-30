@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"banana-back/domain"
+	"banana-back/domain/account"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +17,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 		name    string
 		args    args
 		seed    func(t *testing.T, client bun.IDB)
-		want    *domain.Account
+		want    *account.Account
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -33,7 +33,7 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			args: args{
 				id: 1001,
 			},
-			want: &domain.Account{
+			want: &account.Account{
 				ID:   1001,
 				Name: "I am an account",
 			},
@@ -78,7 +78,7 @@ func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 		name    string
 		args    args
 		seed    func(t *testing.T, client bun.IDB)
-		want    *domain.Account
+		want    *account.Account
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -95,7 +95,7 @@ func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 				field: "name",
 				value: "I am an account",
 			},
-			want: &domain.Account{
+			want: &account.Account{
 				ID:   1001,
 				Name: "I am an account",
 			},
@@ -115,7 +115,7 @@ func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 				field: "name",
 				value: "I am an Account",
 			},
-			want: &domain.Account{
+			want: &account.Account{
 				ID:   1001,
 				Name: "I am an account",
 			},
@@ -158,7 +158,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 		name    string
 		seed    func(t *testing.T, client bun.IDB)
 		args    args
-		want    []domain.Account
+		want    []account.Account
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -178,7 +178,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			},
 			args:    args{},
 			wantErr: assert.NoError,
-			want: []domain.Account{
+			want: []account.Account{
 				{
 					ID:   1,
 					Name: "Test account",
@@ -213,7 +213,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 
 func (s *RepositorySuite) TestAccountRepository_Create() {
 	type args struct {
-		input *domain.Account
+		input *account.Account
 	}
 	tests := []*struct {
 		name    string
@@ -226,7 +226,7 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 			name: "create account",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				input: &domain.Account{
+				input: &account.Account{
 					Name: "Je suis un nouveau compte",
 				},
 			},
@@ -268,7 +268,7 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 
 func (s *RepositorySuite) TestAccountRepository_Update() {
 	type args struct {
-		input *domain.Account
+		input *account.Account
 	}
 	tests := []*struct {
 		name    string
@@ -288,7 +288,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 				require.NoError(t, err)
 			},
 			args: args{
-				input: &domain.Account{
+				input: &account.Account{
 					ID:   10009,
 					Name: "New name",
 				},
@@ -312,7 +312,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			name: "account does not exist",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				input: &domain.Account{
+				input: &account.Account{
 					ID:   10009,
 					Name: "New name",
 				},

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"banana-back/domain"
+	"banana-back/domain/account"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -20,7 +20,7 @@ func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 		})
 	}
 
-	response := ArrayResponse[domain.Account]{
+	response := ArrayResponse[account.Account]{
 		Data: accountViews,
 	}
 
@@ -54,8 +54,8 @@ func (h *AccountHttpHandler) createAccountHandler(c echo.Context) error {
 	existingAccount, _ := h.Repository.FindOneByField(c.Request().Context(), "name", u.Name)
 
 	// As domain is pure functions only, no need to inject as it does not make any side effect
-	if accountToCreate, err := domain.CreateAccount(
-		&domain.CreateAccountCommand{Name: u.Name},
+	if accountToCreate, err := account.CreateAccount(
+		&account.CreateAccountCommand{Name: u.Name},
 		existingAccount,
 	); err != nil {
 		h.Logger.Error("failed to create an account: %w", err)
@@ -81,7 +81,7 @@ func (h *AccountHttpHandler) updateAccount(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	h.Repository.Update(c.Request().Context(), &domain.Account{
+	h.Repository.Update(c.Request().Context(), &account.Account{
 		ID:   u.ID,
 		Name: u.Name,
 	})

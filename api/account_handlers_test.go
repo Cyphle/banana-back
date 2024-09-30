@@ -2,7 +2,7 @@ package api
 
 import (
 	"banana-back/api/mocks"
-	"banana-back/domain"
+	"banana-back/domain/account"
 	"banana-back/repositories"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -26,8 +26,8 @@ func TestFindAccounts(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockRep := mocks.MockAccountRepository{}
-		mockRep.On("FindAll").Return([]domain.Account{
-			domain.Account{
+		mockRep.On("FindAll").Return([]account.Account{
+			account.Account{
 				ID:   1,
 				Name: "Coucou",
 			},
@@ -48,8 +48,8 @@ func TestFindAccounts(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockRep := mocks.MockAccountRepository{}
-		mockRep.On("FindAll").Return([]domain.Account{
-			domain.Account{
+		mockRep.On("FindAll").Return([]account.Account{
+			account.Account{
 				ID:   1,
 				Name: "Coucou",
 			},
@@ -73,7 +73,7 @@ func TestFindAccountById(t *testing.T) {
 		c.SetParamValues("1")
 
 		mockRep := mocks.MockAccountRepository{}
-		mockRep.On("FindById").Return(&domain.Account{
+		mockRep.On("FindById").Return(&account.Account{
 			ID:   1,
 			Name: "Coucou",
 		}, nil)
@@ -102,7 +102,7 @@ func TestCreateAccount(t *testing.T) {
 			nil,
 			repositories.ErrAccountNotFound,
 		).Once()
-		mockRep.On("FindOneByField").Return(&domain.Account{
+		mockRep.On("FindOneByField").Return(&account.Account{
 			ID:   1,
 			Name: "John Smith",
 		}, nil).Once()
