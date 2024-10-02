@@ -25,6 +25,7 @@ type Account struct {
 
 type CreateAccountCommand struct {
 	Name string
+	Type AccountType
 }
 
 func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Account, error) {
@@ -33,27 +34,4 @@ func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Ac
 	}
 
 	return &Account{Name: command.Name}, nil
-}
-
-func AddLineToAccount(account *Account, command *AddAccountLineCommand) error {
-	account.Lines = append(account.Lines, AccountLine{
-		Type:            command.Type,
-		EventDate:       command.EventDate,
-		ApplicationDate: command.ApplicationDate,
-		Description:     command.Description,
-		Amount:          command.Amount,
-	})
-
-	return nil
-}
-
-func UpdateApplicationDateOfLine(account *Account, lineId int64, date *date.Date) error {
-	for i, line := range account.Lines {
-		if line.ID == lineId {
-			account.Lines[i].ApplicationDate = date
-			break
-		}
-	}
-
-	return nil
 }

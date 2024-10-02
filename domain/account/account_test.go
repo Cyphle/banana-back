@@ -2,9 +2,7 @@ package account
 
 import (
 	"fmt"
-	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/genproto/googleapis/type/date"
 	"testing"
 )
 
@@ -39,121 +37,6 @@ func TestCreateAccount(t *testing.T) {
 			t,
 			fmt.Errorf("name already exists"),
 			err,
-		)
-	})
-}
-
-func TestManagingLinesInAccount(t *testing.T) {
-	t.Run("should add a new line to an account", func(t *testing.T) {
-		account := Account{
-			Name: "My new account",
-		}
-		amount, _ := decimal.NewFromString("10.3")
-		command := AddAccountLineCommand{
-			Type: Expense,
-			EventDate: &date.Date{
-				Year:  2024,
-				Month: 7,
-				Day:   25,
-			},
-			Description: "Some expense",
-			Amount:      amount,
-		}
-
-		AddLineToAccount(&account, &command)
-
-		assert.Equal(
-			t,
-			&Account{
-				Name: "My new account",
-				Lines: []AccountLine{
-					{
-						Type: Expense,
-						EventDate: &date.Date{
-							Year:  2024,
-							Month: 7,
-							Day:   25,
-						},
-						Description: "Some expense",
-						Amount:      amount,
-					},
-				},
-			},
-			&account,
-		)
-	})
-
-	t.Run("should add application date to a line of an account", func(t *testing.T) {
-		amount, _ := decimal.NewFromString("10.3")
-		account := Account{
-			Name: "My new account",
-			Lines: []AccountLine{
-				{
-					ID:   1,
-					Type: Expense,
-					EventDate: &date.Date{
-						Year:  2024,
-						Month: 7,
-						Day:   25,
-					},
-					Description: "Some expense",
-					Amount:      amount,
-				},
-				{
-					ID:   2,
-					Type: Expense,
-					EventDate: &date.Date{
-						Year:  2024,
-						Month: 7,
-						Day:   25,
-					},
-					Description: "Some expense",
-					Amount:      amount,
-				},
-			},
-		}
-
-		UpdateApplicationDateOfLine(&account, 2, &date.Date{
-			Year:  2024,
-			Month: 7,
-			Day:   29,
-		})
-
-		assert.Equal(
-			t,
-			&Account{
-				Name: "My new account",
-				Lines: []AccountLine{
-					{
-						ID:   1,
-						Type: Expense,
-						EventDate: &date.Date{
-							Year:  2024,
-							Month: 7,
-							Day:   25,
-						},
-						Description: "Some expense",
-						Amount:      amount,
-					},
-					{
-						ID:   2,
-						Type: Expense,
-						EventDate: &date.Date{
-							Year:  2024,
-							Month: 7,
-							Day:   25,
-						},
-						ApplicationDate: &date.Date{
-							Year:  2024,
-							Month: 7,
-							Day:   29,
-						},
-						Description: "Some expense",
-						Amount:      amount,
-					},
-				},
-			},
-			&account,
 		)
 	})
 }
