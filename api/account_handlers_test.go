@@ -3,7 +3,7 @@ package api
 import (
 	"banana-back/api/mocks"
 	"banana-back/domain/account"
-	"banana-back/repositories"
+	account2 "banana-back/repositories/account"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"log/slog"
@@ -100,7 +100,7 @@ func TestCreateAccount(t *testing.T) {
 		mockRep := mocks.MockAccountRepository{}
 		mockRep.On("FindOneByField").Return(
 			nil,
-			repositories.ErrAccountNotFound,
+			account2.ErrAccountNotFound,
 		).Once()
 		mockRep.On("FindOneByField").Return(&account.Account{
 			ID:   1,

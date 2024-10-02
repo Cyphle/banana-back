@@ -1,6 +1,9 @@
 package profile
 
-import "errors"
+import (
+	"errors"
+	"github.com/uptrace/bun"
+)
 
 type Profile struct {
 	ID        int64
@@ -11,10 +14,11 @@ type Profile struct {
 }
 
 type CreateProfileCommand struct {
-	Username  string
-	Email     string
-	firstName string
-	lastName  string
+	bun.BaseModel `bun:"table:profiles"`
+	Username      string `json:"username"`
+	Email         string `json:"email"`
+	FirstName     string `json:"first_name"`
+	LastName      string `json:"last_name"`
 }
 
 func ValidateProfileUsername(command *CreateProfileCommand, existingProfiles []Profile) (*CreateProfileCommand, error) {

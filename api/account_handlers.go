@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// TODO peut être que les handler faudrait les mettre dans la couche application et en faire des use cases. si on garde les handlers ça fait une indirection en plus
 func (h *AccountHttpHandler) getAccounts(c echo.Context) error {
 	h.Logger.Info("Requesting all accounts")
 	accounts, _ := h.Repository.FindAll(c.Request().Context())
