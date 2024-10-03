@@ -3,7 +3,7 @@ package api
 import (
 	"banana-back/api/mocks"
 	"banana-back/domain/account"
-	account2 "banana-back/repositories/account"
+	account2 "banana-back/repositories"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"log/slog"

@@ -1,4 +1,4 @@
-package account
+package repositories
 
 import (
 	"banana-back/domain/account"

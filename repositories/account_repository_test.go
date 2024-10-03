@@ -1,8 +1,7 @@
-package account
+package repositories
 
 import (
 	"banana-back/domain/account"
-	"banana-back/repositories"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,7 +9,7 @@ import (
 	"testing"
 )
 
-func (s *repositories.RepositorySuite) TestAccountRepository_GetByID() {
+func (s *RepositorySuite) TestAccountRepository_GetByID() {
 	type args struct {
 		id int64
 	}
@@ -70,7 +69,7 @@ func (s *repositories.RepositorySuite) TestAccountRepository_GetByID() {
 	}
 }
 
-func (s *repositories.RepositorySuite) TestAccountRepository_FindOneByField() {
+func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 	type args struct {
 		field string
 		value string
@@ -152,7 +151,7 @@ func (s *repositories.RepositorySuite) TestAccountRepository_FindOneByField() {
 	}
 }
 
-func (s *repositories.RepositorySuite) TestAccountRepository_List() {
+func (s *RepositorySuite) TestAccountRepository_List() {
 	type args struct {
 	}
 	tests := []*struct {
@@ -212,7 +211,7 @@ func (s *repositories.RepositorySuite) TestAccountRepository_List() {
 	}
 }
 
-func (s *repositories.RepositorySuite) TestAccountRepository_Create() {
+func (s *RepositorySuite) TestAccountRepository_Create() {
 	type args struct {
 		input *account.Account
 	}
@@ -267,7 +266,7 @@ func (s *repositories.RepositorySuite) TestAccountRepository_Create() {
 	}
 }
 
-func (s *repositories.RepositorySuite) TestAccountRepository_Update() {
+func (s *RepositorySuite) TestAccountRepository_Update() {
 	type args struct {
 		input *account.Account
 	}
@@ -349,7 +348,7 @@ func (s *repositories.RepositorySuite) TestAccountRepository_Update() {
 	}
 }
 
-func (s *repositories.RepositorySuite) TestStakeholderRepository_Delete() {
+func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 	type args struct {
 		id int64
 	}

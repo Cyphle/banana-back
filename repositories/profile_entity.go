@@ -1,4 +1,4 @@
-package profile
+package repositories
 
 import (
 	"github.com/uptrace/bun"

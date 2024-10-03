@@ -9,8 +9,8 @@ type Profile struct {
 	ID        int64
 	Username  string
 	Email     string
-	firstName string
-	lastName  string
+	FirstName string
+	LastName  string
 }
 
 type CreateProfileCommand struct {

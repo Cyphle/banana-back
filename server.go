@@ -4,7 +4,7 @@ import (
 	"banana-back/api"
 	"banana-back/config"
 	"banana-back/initializers"
-	"banana-back/repositories/account"
+	"banana-back/repositories"
 	"context"
 	"fmt"
 	"log/slog"
@@ -28,7 +28,7 @@ func main() {
 	// ECHO
 	handler := api.NewAccountHttpHandler(
 		log,
-		account.NewAccountRepository(dbClient),
+		repositories.NewAccountRepository(dbClient),
 	)
 	api.ActivateAccountRoutes(conf.WebServer, handler)
 
