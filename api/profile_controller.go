@@ -16,7 +16,7 @@ func CreateProfileHandler(logger *slog.Logger, repository profile.ProfileReposit
 			return c.String(http.StatusBadRequest, "bad request")
 		}
 
-		var err = application.CreateProfileUseCase(logger, repository)(c, u)
+		var err = application.CreateProfileUseCase(logger, repository)(c.Request().Context(), u)
 
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, fmt.Errorf("failed to create profile: %w", err))

@@ -4,6 +4,7 @@ import (
 	"banana-back/api/mocks"
 	"banana-back/domain/account"
 	account2 "banana-back/repositories"
+	"banana-back/testutils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -21,12 +22,12 @@ func TestFindAccounts(t *testing.T) {
 
 		mockRep := mocks.MockAccountRepository{}
 		mockRep.On("FindAll").Return([]account.Account{
-			account.Account{
+			{
 				ID:   1,
 				Name: "Coucou",
 			},
 		}, nil)
-		handler := NewAccountHttpHandler(logger, &mockRep)
+		handler := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, handler.getAccounts(c)) {
@@ -48,7 +49,7 @@ func TestFindAccounts(t *testing.T) {
 				Name: "Coucou",
 			},
 		}, nil)
-		handler := NewAccountHttpHandler(logger, &mockRep)
+		handler := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		handler.getAccounts(c)
 
@@ -71,7 +72,7 @@ func TestFindAccountById(t *testing.T) {
 			ID:   1,
 			Name: "Coucou",
 		}, nil)
-		handler := NewAccountHttpHandler(logger, &mockRep)
+		handler := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, handler.findAccountHandler(c)) {
@@ -101,7 +102,7 @@ func TestCreateAccount(t *testing.T) {
 			Name: "John Smith",
 		}, nil).Once()
 		mockRep.On("Create").Return(nil)
-		h := NewAccountHttpHandler(logger, &mockRep)
+		h := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, h.createAccountHandler(c)) {
@@ -126,7 +127,7 @@ func TestUpdateAccount(t *testing.T) {
 
 		mockRep := mocks.MockAccountRepository{}
 		mockRep.On("Update").Return(nil)
-		h := NewAccountHttpHandler(logger, &mockRep)
+		h := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, h.updateAccount(c)) {
@@ -149,7 +150,7 @@ func TestDeleteAccount(t *testing.T) {
 
 		mockRep := mocks.MockAccountRepository{}
 		mockRep.On("Delete").Return(nil)
-		handler := NewAccountHttpHandler(logger, &mockRep)
+		handler := NewAccountHttpHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, handler.deleteAccount(c)) {

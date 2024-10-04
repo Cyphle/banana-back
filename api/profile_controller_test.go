@@ -3,6 +3,7 @@ package api
 import (
 	"banana-back/api/mocks"
 	"banana-back/repositories"
+	"banana-back/testutils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -26,7 +27,7 @@ func TestCreateProfile(t *testing.T) {
 			repositories.ErrProfileNotFound,
 		).Once()
 		mockRep.On("Create").Return(nil)
-		h := CreateProfileHandler(logger, &mockRep)
+		h := CreateProfileHandler(testutils.Logger, &mockRep)
 
 		// Assertions
 		if assert.NoError(t, h(c)) {
