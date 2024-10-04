@@ -32,6 +32,9 @@ func main() {
 	)
 	api.ActivateAccountRoutes(conf.WebServer, handler)
 
+	var profileRepository = repositories.NewProfileRepository(dbClient)
+	api.ProfileRoutes(conf.WebServer, log, profileRepository)
+
 	conf.WebServer.Logger.Fatal(conf.WebServer.Start(fmt.Sprintf("%s%d", ":", conf.WebServerPort)))
 	// END ECHO
 }

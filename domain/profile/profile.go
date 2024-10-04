@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"errors"
+	"fmt"
 	"github.com/uptrace/bun"
 )
 
@@ -21,11 +21,9 @@ type CreateProfileCommand struct {
 	LastName      string `json:"last_name"`
 }
 
-func ValidateProfileUsername(command *CreateProfileCommand, existingProfiles []Profile) (*CreateProfileCommand, error) {
-	for _, existingProfile := range existingProfiles {
-		if existingProfile.Username == command.Username {
-			return command, errors.New("Username is already taken")
-		}
+func ValidateProfileUsername(command *CreateProfileCommand, existingProfile *Profile) (*CreateProfileCommand, error) {
+	if existingProfile != nil {
+		return nil, fmt.Errorf("username already taken")
 	}
 	return command, nil
 }

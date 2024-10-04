@@ -6,16 +6,10 @@ import (
 	account2 "banana-back/repositories"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
-)
-
-var (
-	logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 )
 
 func TestFindAccounts(t *testing.T) {
