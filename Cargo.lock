@@ -535,6 +535,7 @@ dependencies = [
  "log",
  "migration",
  "sea-orm",
+ "serde",
 ]
 
 [[package]]
