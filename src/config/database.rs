@@ -1,4 +1,5 @@
-use sea_orm::{Database, DatabaseConnection, DbErr};
+use std::time::Duration;
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 
 struct DatabaseConfig {
     host: &'static str,
@@ -35,18 +36,15 @@ fn new_database_config() -> DatabaseConfig {
 pub async fn connect() -> Result<DatabaseConnection, DbErr> {
     let config = new_database_config();
 
-    // let mut opt = ConnectOptions::new("protocol://".to_string() + config.username + ":" + config.password + "@" + config.host + ":" + config.port + "/" + config.schema);
-    // opt.max_connections(config.max_connections)
-    //     .min_connections(config.min_connections)
-    //     .connect_timeout(Duration::from_secs(config.connect_timeout))
-    //     .acquire_timeout(Duration::from_secs(config.acquire_timeout))
-    //     .idle_timeout(Duration::from_secs(config.idle_timeout))
-    //     .max_lifetime(Duration::from_secs(config.max_lifetime))
-    //     .sqlx_logging(config.sqlx_logging)
-    //     .sqlx_logging_level(log::LevelFilter::Info)
-    //     .set_schema_search_path(config.schema);
-    //
-    // Database::connect(opt).await
+    let mut opt = ConnectOptions::new("postgres://".to_string() + config.username + ":" + config.password + "@" + config.host + ":" + config.port + "/" + config.schema);
+    opt.max_connections(config.max_connections)
+        .min_connections(config.min_connections)
+        .connect_timeout(Duration::from_secs(config.connect_timeout))
+        .acquire_timeout(Duration::from_secs(config.acquire_timeout))
+        .idle_timeout(Duration::from_secs(config.idle_timeout))
+        .max_lifetime(Duration::from_secs(config.max_lifetime))
+        .sqlx_logging(config.sqlx_logging)
+        .sqlx_logging_level(log::LevelFilter::Info);
 
-    Database::connect("postgres://".to_string() + config.username + ":" + config.password + "@" + config.host + ":" + config.port + "/" + config.schema).await
+    Database::connect(opt).await
 }
