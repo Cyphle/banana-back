@@ -3,7 +3,12 @@ name = "banana-back-rs"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [".", "entity", "migration"]
+
 [dependencies]
+migration = { path = "migration" } # depends on your needs
+entity = { path = "entity" }
 actix-web = "4"
 sea-orm = { version = "1.0.0-rc.5", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros", "mock" ] }
 log = "0.4.22"
