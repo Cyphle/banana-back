@@ -1,9 +1,8 @@
-use crate::http::handlers::examples::hello;
+use crate::http::handlers::profile::{create_profile, get_profile_by_id};
 use crate::http::state::HandlerState;
 use actix_web::{web, App, HttpServer};
 use log::info;
 use sea_orm::DatabaseConnection;
-use crate::http::handlers::profile::{create_profile, get_profile_by_id};
 
 pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Result<()> {
     info!("Starting Actix server");
@@ -13,7 +12,6 @@ pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Resu
             .app_data(web::Data::new(HandlerState {
                 db_connection: db_connection
             }))
-            .service(hello)
             .service(get_profile_by_id)
             .service(create_profile)
     })
