@@ -529,6 +529,7 @@ name = "banana-back-rs"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "async-std",
  "chrono",
  "entity",
  "env_logger",

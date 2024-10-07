@@ -1,11 +1,12 @@
 use std::ops::{Deref, DerefMut};
 use sea_orm::DatabaseConnection;
-use crate::domain::profiles::CreateProfileCommand;
+use crate::domain::profile::CreateProfileCommand;
 
 mod config;
 mod repositories;
 mod domain;
 mod http;
+mod dto;
 
 #[actix_web::main]
 async fn main() {

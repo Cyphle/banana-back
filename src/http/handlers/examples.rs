@@ -24,8 +24,7 @@ mod tests {
     mod actix_tests {
         use actix_web::http::header::ContentType;
         use actix_web::{test, App};
-
-        use crate::{echo, hello};
+        use super::super::{hello, echo};
 
         #[actix_web::test]
         async fn test_hello_get() {

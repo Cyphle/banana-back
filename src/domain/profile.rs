@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub struct Profile {
     id: i32,
     username: String,
