@@ -15,10 +15,3 @@ type AccountEntity struct {
 	UpdatedAt     *time.Time `json:"-"`
 	DeletedAt     *time.Time `bun:",soft_delete"              json:"-"`
 }
-
-type AccountEntityCreateParams struct {
-	bun.BaseModel `bun:"table:accounts"`
-	Name          string `json:"name"`
-	Type          string `json:"type"`
-	ProfileId     int64  `json:"profile_id"`
-}

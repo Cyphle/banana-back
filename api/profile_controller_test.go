@@ -32,7 +32,7 @@ func TestCreateProfile(t *testing.T) {
 		// Assertions
 		if assert.NoError(t, h(c)) {
 			assert.Equal(t, http.StatusCreated, rec.Code)
-			assert.Equal(t, "{\"id\":1,\"name\":\"John Smith\"}\n", rec.Body.String())
+			assert.Equal(t, "{\"username\":\"johnsmith\",\"email\":\"johnsmith@banana.com\",\"first_name\":\"\",\"last_name\":\"\"}\n", rec.Body.String())
 		}
 		mockRep.AssertExpectations(t)
 	})

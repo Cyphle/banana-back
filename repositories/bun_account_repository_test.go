@@ -24,9 +24,18 @@ func (s *RepositorySuite) TestAccountRepository_GetByID() {
 			name: "account exists",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "I am an account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1001,
+					Name:      "I am an account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
@@ -85,9 +94,18 @@ func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 			name: "account exists",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "I am an account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1001,
+					Name:      "I am an account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
@@ -105,9 +123,18 @@ func (s *RepositorySuite) TestAccountRepository_FindOneByField() {
 			name: "account exists with case insensitive",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "I am an account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1001,
+					Name:      "I am an account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
@@ -165,24 +192,30 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 			name: "list accounts",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "My account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
 				}).Exec(context.Background())
 				require.NoError(t, err)
 				_, err = client.NewInsert().Model(&AccountEntity{
-					ID:   1002,
-					Name: "My other account",
+					ID:        1001,
+					Name:      "My account",
+					ProfileId: 10004,
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1002,
+					Name:      "My other account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
 			args:    args{},
 			wantErr: assert.NoError,
 			want: []account.Account{
-				{
-					ID:   1,
-					Name: "Test account",
-				},
 				{
 					ID:   1001,
 					Name: "My account",
@@ -224,27 +257,36 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 	}{
 		{
 			name: "create account",
-			seed: func(_ *testing.T, _ bun.IDB) {},
+			seed: func(t *testing.T, client bun.IDB) {
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+			},
 			args: args{
 				input: &account.CreateAccountCommand{
-					Name: "Je suis un nouveau compte",
+					Name:      "Je suis un nouveau compte",
+					ProfileId: 10004,
 				},
 			},
 			wantErr: assert.NoError,
 			want: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				var account AccountEntity
+				var accounts []AccountEntity
 				err := client.
 					NewSelect().
-					Model(&account).
+					Model(&accounts).
 					Column("id", "name").
-					Where("id = ?", 2).
 					Scan(context.Background())
 				require.NoError(t, err)
 				assert.Equal(t, AccountEntity{
-					ID:   2,
+					ID:   1,
 					Name: "Je suis un nouveau compte",
-				}, account)
+				}, accounts[0])
 			},
 		},
 	}
@@ -281,9 +323,18 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 			name: "update account",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   10009,
-					Name: "Account 1",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        10009,
+					Name:      "Account 1",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
@@ -348,7 +399,7 @@ func (s *RepositorySuite) TestAccountRepository_Update() {
 	}
 }
 
-func (s *RepositorySuite) TestStakeholderRepository_Delete() {
+func (s *RepositorySuite) TestAccountRepository_Delete() {
 	type args struct {
 		id int64
 	}
@@ -363,9 +414,18 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 			name: "delete account",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "My account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1001,
+					Name:      "My account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},
@@ -387,9 +447,18 @@ func (s *RepositorySuite) TestStakeholderRepository_Delete() {
 			name: "account does not exist",
 			seed: func(t *testing.T, client bun.IDB) {
 				t.Helper()
-				_, err := client.NewInsert().Model(&AccountEntity{
-					ID:   1001,
-					Name: "My account",
+				_, err := client.NewInsert().Model(&ProfileEntity{
+					ID:        10004,
+					Username:  "johndoe",
+					Email:     "johndoe@banana.fr",
+					FirstName: "John",
+					LastName:  "Doe",
+				}).Exec(context.Background())
+				require.NoError(t, err)
+				_, err = client.NewInsert().Model(&AccountEntity{
+					ID:        1001,
+					Name:      "My account",
+					ProfileId: 10004,
 				}).Exec(context.Background())
 				require.NoError(t, err)
 			},

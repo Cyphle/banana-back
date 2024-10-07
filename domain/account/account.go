@@ -25,10 +25,11 @@ type Account struct {
 }
 
 type CreateAccountCommand struct {
-	bun.BaseModel   `bun:"table:profiles"`
+	bun.BaseModel   `bun:"table:accounts"`
 	Name            string      `json:"name"`
 	Type            AccountType `json:"type"`
 	StartingBalance float64     `json:"starting_balance"`
+	ProfileId       int64       `json:"profile_id"`
 }
 
 func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*CreateAccountCommand, error) {

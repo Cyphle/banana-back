@@ -93,15 +93,11 @@ func (r *BunAccountRepository) FindAll(
 
 func (r *BunAccountRepository) Create(ctx context.Context, input *account.CreateAccountCommand) error {
 	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		params := &AccountEntityCreateParams{
-			Name: input.Name,
-		}
-
 		if _, err := tx.
 			NewInsert().
-			Model(params).
+			Model(input).
 			Exec(ctx); err != nil {
-			return fmt.Errorf("failed to create stakeholder: %w", err)
+			return fmt.Errorf("failed to create account: %w", err)
 		}
 		return nil
 	})

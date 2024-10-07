@@ -29,7 +29,7 @@ func (m *MockAccountRepository) FindOneByField(ctx context.Context, field string
 	}
 }
 
-func (m *MockAccountRepository) Create(ctx context.Context, input *account.Account) error {
+func (m *MockAccountRepository) Create(ctx context.Context, input *account.CreateAccountCommand) error {
 	args := m.Called()
 	return args.Error(0)
 }
