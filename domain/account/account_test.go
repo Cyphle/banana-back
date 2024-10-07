@@ -16,7 +16,7 @@ func TestCreateAccount(t *testing.T) {
 
 		assert.Equal(
 			t,
-			&Account{
+			&CreateAccountCommand{
 				Name: "My new account",
 			},
 			result,

@@ -1,1 +1,0 @@
-INSERT INTO accounts(name) VALUES('Test account');

@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-type AccountRepository struct {
+type BunAccountRepository struct {
 	dbClient bun.IDB
 }
 
-func NewAccountRepository(dbClient bun.IDB) *AccountRepository {
-	return &AccountRepository{
+func NewAccountRepository(dbClient bun.IDB) *BunAccountRepository {
+	return &BunAccountRepository{
 		dbClient: dbClient,
 	}
 }
@@ -24,7 +24,7 @@ var (
 	ErrAccountNotFound = errors.New("account not found")
 )
 
-func (r *AccountRepository) FindById(ctx context.Context, id int64) (*account.Account, error) {
+func (r *BunAccountRepository) FindById(ctx context.Context, id int64) (*account.Account, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -45,7 +45,7 @@ func (r *AccountRepository) FindById(ctx context.Context, id int64) (*account.Ac
 	}
 }
 
-func (r *AccountRepository) FindOneByField(ctx context.Context, field string, value string) (*account.Account, error) {
+func (r *BunAccountRepository) FindOneByField(ctx context.Context, field string, value string) (*account.Account, error) {
 	var accountEntity AccountEntity
 	err := r.dbClient.
 		NewSelect().
@@ -66,7 +66,7 @@ func (r *AccountRepository) FindOneByField(ctx context.Context, field string, va
 	}
 }
 
-func (r *AccountRepository) FindAll(
+func (r *BunAccountRepository) FindAll(
 	ctx context.Context,
 ) ([]account.Account, error) {
 	var accountEntities []AccountEntity
@@ -91,7 +91,7 @@ func (r *AccountRepository) FindAll(
 	return accounts, nil
 }
 
-func (r *AccountRepository) Create(ctx context.Context, input *account.Account) error {
+func (r *BunAccountRepository) Create(ctx context.Context, input *account.CreateAccountCommand) error {
 	err := r.dbClient.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		params := &AccountEntityCreateParams{
 			Name: input.Name,
@@ -108,7 +108,7 @@ func (r *AccountRepository) Create(ctx context.Context, input *account.Account) 
 	return err
 }
 
-func (r *AccountRepository) Update(
+func (r *BunAccountRepository) Update(
 	ctx context.Context,
 	input *account.Account,
 ) error {
@@ -132,7 +132,7 @@ func (r *AccountRepository) Update(
 	return nil
 }
 
-func (r *AccountRepository) Delete(ctx context.Context, id int64) error {
+func (r *BunAccountRepository) Delete(ctx context.Context, id int64) error {
 	res, err := r.
 		dbClient.
 		NewDelete().

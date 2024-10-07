@@ -11,7 +11,7 @@ func TestCreateProfile(t *testing.T) {
 			Username: "johndoe",
 		}
 
-		result, _ := ValidateProfileUsername(&command, []Profile{})
+		result, _ := ValidateProfileUsername(&command, nil)
 
 		assert.Equal(
 			t,

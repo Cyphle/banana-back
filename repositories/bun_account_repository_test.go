@@ -213,7 +213,7 @@ func (s *RepositorySuite) TestAccountRepository_List() {
 
 func (s *RepositorySuite) TestAccountRepository_Create() {
 	type args struct {
-		input *account.Account
+		input *account.CreateAccountCommand
 	}
 	tests := []*struct {
 		name    string
@@ -226,7 +226,7 @@ func (s *RepositorySuite) TestAccountRepository_Create() {
 			name: "create account",
 			seed: func(_ *testing.T, _ bun.IDB) {},
 			args: args{
-				input: &account.Account{
+				input: &account.CreateAccountCommand{
 					Name: "Je suis un nouveau compte",
 				},
 			},

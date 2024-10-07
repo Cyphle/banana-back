@@ -2,6 +2,7 @@ package account
 
 import (
 	"fmt"
+	"github.com/uptrace/bun"
 	"google.golang.org/genproto/googleapis/type/date"
 )
 
@@ -24,14 +25,16 @@ type Account struct {
 }
 
 type CreateAccountCommand struct {
-	Name string
-	Type AccountType
+	bun.BaseModel   `bun:"table:profiles"`
+	Name            string      `json:"name"`
+	Type            AccountType `json:"type"`
+	StartingBalance float64     `json:"starting_balance"`
 }
 
-func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*Account, error) {
+func CreateAccount(command *CreateAccountCommand, existingAccount *Account) (*CreateAccountCommand, error) {
 	if existingAccount != nil {
 		return nil, fmt.Errorf("name already exists")
 	}
 
-	return &Account{Name: command.Name}, nil
+	return command, nil
 }
