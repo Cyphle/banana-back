@@ -10,5 +10,20 @@ services:
     volumes:
       - bananapgdata:/var/lib/postgresql/data
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.1
+    command:
+      - start-dev # for testing purposes
+      - --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak/realms/banana.json:/opt/keycloak/data/import/banana.json
+    ports:
+      - "8181:8080"
+    networks:
+      - banana
+      
 volumes:
   bananapgdata:

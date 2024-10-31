@@ -4,7 +4,7 @@ use actix_web::{web, App, HttpServer};
 use log::info;
 use sea_orm::DatabaseConnection;
 
-pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Result<()> {
+pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Result<> {
     info!("Starting Actix server");
 
     HttpServer::new(|| {
