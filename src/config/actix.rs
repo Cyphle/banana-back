@@ -4,7 +4,7 @@ use actix_web::{web, App, HttpServer};
 use log::info;
 use sea_orm::DatabaseConnection;
 
-pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Result<> {
+pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Result<()> {
     info!("Starting Actix server");
 
     HttpServer::new(|| {
@@ -15,7 +15,7 @@ pub async fn config(db_connection: &'static DatabaseConnection) -> std::io::Resu
             .service(get_profile_by_id)
             .service(create_profile)
     })
-        .bind(("127.0.0.1", 8080))?
+        .bind(("127.0.0.1", 3000))?
         .run()
         .await
 }
