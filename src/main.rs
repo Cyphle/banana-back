@@ -1,11 +1,11 @@
-use std::{ops::{Deref, DerefMut}, sync::Arc};
-use openid::{Client, DiscoveredClient, Options};
-use reqwest::Url;
-use sea_orm::DatabaseConnection;
+use actix_cors::Cors;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use openid::{Client, Options, StandardClaims, Token};
 use serde::Deserialize;
-use serde_json::Value;
+use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::domain::profile::CreateProfileCommand;
+use url::Url;
 
 mod config;
 mod repositories;
@@ -19,7 +19,7 @@ struct AuthRequest {
 }
 
 #[actix_web::main]
-async fn main() {
+async fn main() -> std::io::Result<()> {
     config::logger::config();
 
     log::info!("Starting the application");
@@ -29,58 +29,18 @@ async fn main() {
 
 
     /* OPENID CONNECT */
-    let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana").unwrap();
-    let client_id = "banana";
-    let client_secret = "banana-secret";
-    let redirect_uri = Some("http://localhost:9000/callback");
-    
-    let client: Client<openid::Discovered, Value> = Client::discover(
-        client_id.to_string(),
-        client_secret.to_string(),
-        Some(redirect_uri.to_string()),
-        issuer_url,
-    )
-    .await
-    .expect("Failed to discover OpenID configuration");
+// NOTES TODO
+    /*
+        Il faut une unique route /login qui gère les deux /authorize et /token
+        1. Quand on arrive sur le front, si le user n'est pas logged, appeler /login sans aucun paramètre
+        2. On appelle la méthode authenticate existante ici
+        3. On arrive sur la page d'auth de keycloak, on sélectionne un compte, on valide
+        4. On est redirigé vers /callback avec un code, callback qui est une URL du front. (genre le /login du front).
+        5. Si le front voit un paramètre code dans l'url, on appelle la méthode /login du back avec ce code
+        6. On récupère le token et on le sauvegarde dans un cookie
+        7. On peut appeler les autres endpoints
+     */
 
-    // Wrap client in Arc and Mutex for sharing across Actix handlers
-    let client = Arc::new(Mutex::new(client));
-
-    /* END OPENID CONNECT */
-
-    // let _ = config::actix::config(static_db).await;
-
-    // repositories::profiles::create(static_db, &CreateProfileCommand {
-    //     username: "johndoe".to_string(),
-    //     email: "johndoe".to_string(),
-    //     first_name: "John".to_string(),
-    //     last_name: "Doe".to_string(),
-    // }).await.unwrap();
-
-    log::info!("Application is now closed");
-
-    // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
-}
-
-/* 
-WORKING OIDC EXAMPLE
-
-use actix_cors::Cors;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use openid::{Client, Options, StandardClaims, Token};
-use serde::Deserialize;
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use url::Url;
-
-#[derive(Debug, Deserialize)]
-struct AuthRequest {
-    code: String,
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
     // Set up Keycloak OIDC parameters
     let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana");
     let client_id = "banana";
@@ -118,7 +78,24 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:8080")?
     .run()
     .await
+
+    /* END OPENID CONNECT */
+
+    // ACTIX
+    // let _ = config::actix::config(static_db).await;
+
+    // repositories::profiles::create(static_db, &CreateProfileCommand {
+    //     username: "johndoe".to_string(),
+    //     email: "johndoe".to_string(),
+    //     first_name: "John".to_string(),
+    //     last_name: "Doe".to_string(),
+    // }).await.unwrap();
+
+    // log::info!("Application is now closed");
+
+    // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
+
 
 // Redirect user to the authorization URL
 async fn authenticate(
@@ -170,14 +147,3 @@ async fn auth_callback(
         }
     }
 }
-
-[dependencies]
-actix-web = "4"
-openid = "0.15"
-reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-url = "2.2"
-actix-cors = "0.6"
-*/
