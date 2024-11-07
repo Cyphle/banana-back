@@ -3,6 +3,7 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use log::debug;
 use log::error;
 use log::info;
+use openid::IdToken;
 use openid::{Client, Options, StandardClaims, Token};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -115,20 +116,15 @@ async fn login(
 
             info!("Requesting token with received authorization code: {}", authorization_code);
 
-            match client.request_token(authorization_code).await {
+            match client.authenticate(authorization_code, None, None).await {
                 Ok(token) => {
-                    info!("Forged token: {:?}", token);
+                    // info!("Forged token: {:?}", token.bearer);
+                    info!("ID token: {:?}", token.id_token.unwrap().payload().unwrap().userinfo); // La on a les infos. faut les extraires
+                    // { sub: None, name: Some("John Doe"), given_name: Some("John"), family_name: Some("Doe"), middle_name: None, nickname: None, preferred_username: Some("john.doe"), profile: None, picture: None, website: None, email: Some("john.doe@banana.com"), email_verified: false, gender: None, birthdate: None, zoneinfo: None, locale: None, phone_number: None, phone_number_verified: false, address: None, updated_at: None }
 
-                    let access_token = token.access_token.clone();
-                    let id_token = token.id_token.clone();
-                    let token_wrapper = Token::from(token);
+                    let access_token = token.bearer.access_token.clone();
+                    let id_token = token.bearer.id_token.clone();
 
-                    // Optional: Fetch user info
-                    if let Ok(userinfo) = client.request_userinfo(&token_wrapper).await {
-                        return HttpResponse::Ok().json(userinfo);
-                    }
-
-                    // If user info is not fetched, return tokens only
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
                         ("id_token", id_token.unwrap_or_default()),
@@ -143,6 +139,7 @@ async fn login(
         None => {
             info!("No code provided. Starting authentication.");
 
+            // Il faut définir un nonce et max age ici pour réutiliser à priori
             let auth_url = client.auth_url(&Options {
                 scope: Some("openid email profile".into()),
                 ..Default::default()
