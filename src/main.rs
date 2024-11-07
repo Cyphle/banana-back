@@ -1,5 +1,8 @@
 use actix_cors::Cors;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use log::debug;
+use log::error;
+use log::info;
 use openid::{Client, Options, StandardClaims, Token};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -8,14 +11,16 @@ use tokio::sync::Mutex;
 use url::Url;
 
 mod config;
-mod repositories;
 mod domain;
-mod http;
 mod dto;
+mod http;
+mod repositories;
 
 #[derive(Debug, Deserialize)]
 struct AuthRequest {
-    code: String,
+    code: Option<String>,
+    session_state: Option<String>,
+    iss: Option<String>,
 }
 
 #[actix_web::main]
@@ -24,28 +29,28 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Starting the application");
 
-    let db = config::database::connect().await.unwrap();
-    let static_db = Box::leak(Box::new(db));
-
+    // let db = config::database::connect().await.unwrap();
+    // let static_db = Box::leak(Box::new(db));
 
     /* OPENID CONNECT */
-// NOTES TODO
+    // NOTES TODO
     /*
-        Il faut une unique route /login qui gère les deux /authorize et /token
-        1. Quand on arrive sur le front, si le user n'est pas logged, appeler /login sans aucun paramètre
-        2. On appelle la méthode authenticate existante ici
-        3. On arrive sur la page d'auth de keycloak, on sélectionne un compte, on valide
-        4. On est redirigé vers /callback avec un code, callback qui est une URL du front. (genre le /login du front).
-        5. Si le front voit un paramètre code dans l'url, on appelle la méthode /login du back avec ce code
-        6. On récupère le token et on le sauvegarde dans un cookie
-        7. On peut appeler les autres endpoints
-     */
+       Il faut une unique route /login qui gère les deux /authorize et /token
+       1. Quand on arrive sur le front, si le user n'est pas logged, appeler /login sans aucun paramètre
+       2. On appelle la méthode authenticate existante ici
+       3. On arrive sur la page d'auth de keycloak, on sélectionne un compte, on valide
+       4. On est redirigé vers /callback avec un code, callback qui est une URL du front. (genre le /login du front).
+       5. Si le front voit un paramètre code dans l'url, on appelle la méthode /login du back avec ce code
+       6. On récupère le token et on le sauvegarde dans un cookie
+       7. On peut appeler les autres endpoints
+    */
 
     // Set up Keycloak OIDC parameters
     let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana");
     let client_id = "banana";
     let client_secret = "banana-secret";
-    let redirect_uri = "http://localhost:8080/auth/callback";
+    // let redirect_uri = "http://localhost:9000/login";
+    let redirect_uri = "http://localhost:9000/login";
 
     // Initialize OpenID Client with Keycloak discovery
     let client: Client<openid::Discovered, StandardClaims> = Client::discover(
@@ -72,8 +77,7 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600),
             )
             .app_data(web::Data::new(client.clone()))
-            .route("/", web::get().to(authenticate))
-            .route("/auth/callback", web::get().to(auth_callback))
+            .service(login)
     })
     .bind("127.0.0.1:8080")?
     .run()
@@ -96,54 +100,57 @@ async fn main() -> std::io::Result<()> {
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
 
-
-// Redirect user to the authorization URL
-async fn authenticate(
-    client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
-) -> impl Responder {
-    let client = client.lock().await;
-    let auth_url = client.auth_url(&Options {
-        scope: Some("openid email profile".into()),
-        ..Default::default()
-    });
-    HttpResponse::Found()
-        .append_header(("Location", auth_url.to_string()))
-        .finish()
-}
-
-// Handle the authorization callback
-async fn auth_callback(
+#[get("/login")]
+async fn login(
     client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
     query: web::Query<AuthRequest>,
 ) -> impl Responder {
     let client = client.lock().await;
-    let code = &query.code;
 
-    println!("Received authorization code: {}", code);
+    info!("Login with query: {:?}", query);
 
-    // Exchange the authorization code for tokens
-    match client.request_token(code).await {
-        Ok(token) => {
-            println!("Token: {:?}", token);
-            let access_token = token.access_token.clone();
-            let id_token = token.id_token.clone();
+    match &query.code {
+        Some(code) => {
+            let authorization_code: &&String = &code;
 
-            let token_wrapper = Token::from(token);
+            info!("Requesting token with received authorization code: {}", authorization_code);
 
-            // Optional: Fetch user info
-            if let Ok(userinfo) = client.request_userinfo(&token_wrapper).await {
-                return HttpResponse::Ok().json(userinfo);
+            match client.request_token(authorization_code).await {
+                Ok(token) => {
+                    info!("Forged token: {:?}", token);
+
+                    let access_token = token.access_token.clone();
+                    let id_token = token.id_token.clone();
+                    let token_wrapper = Token::from(token);
+
+                    // Optional: Fetch user info
+                    if let Ok(userinfo) = client.request_userinfo(&token_wrapper).await {
+                        return HttpResponse::Ok().json(userinfo);
+                    }
+
+                    // If user info is not fetched, return tokens only
+                    HttpResponse::Ok().json(HashMap::from([
+                        ("access_token", access_token),
+                        ("id_token", id_token.unwrap_or_default()),
+                    ]))
+                }
+                Err(err) => {
+                    error!("Error exchanging code for token: {:?}", err);
+                    HttpResponse::InternalServerError().body("Failed to authenticate")
+                }
             }
-
-            // If user info is not fetched, return tokens only
-            HttpResponse::Ok().json(HashMap::from([
-                ("access_token", access_token),
-                ("id_token", id_token.unwrap_or_default()),
-            ]))
         }
-        Err(err) => {
-            eprintln!("Error exchanging code for token: {:?}", err);
-            HttpResponse::InternalServerError().body("Failed to authenticate")
+        None => {
+            info!("No code provided. Starting authentication.");
+
+            let auth_url = client.auth_url(&Options {
+                scope: Some("openid email profile".into()),
+                ..Default::default()
+            });
+
+            HttpResponse::Found()
+                .append_header(("Location", auth_url.to_string()))
+                .finish()
         }
     }
 }
