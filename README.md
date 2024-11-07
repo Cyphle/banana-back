@@ -46,3 +46,22 @@ config::actix::config(static_db).await;
 ### Logging
 - See `config::logger`
 - Use macros `log::info!`, `log::error!`, `log::warn!`, `log::debug!`, `log::trace!`
+
+### OIDC
+Pour supprimer le bout de code du front qui fait 
+```
+useEffect(() => {
+    const code = queryParams.get('code');
+    const sessionState = queryParams.get('session_state');
+    const iss = queryParams.get('iss');
+    if (isNotNullNorUndefined(code) && isNotNullNorUndefined(sessionState) && isNotNullNorUndefined(iss)) {
+      authenticate(code, sessionState, iss)
+      .then(() => {
+        navigate('/');
+      });
+    }
+  }, [queryParams]);
+```
+Il faut ajouter de la gestion de session ou alors trimballer un paramètre qui s'appelle genre 'next_url' qui est l'URL d'origine du front et rediriger vers cette URL tout à la fin. On peut alors paramétrer les redirect URLs pour que ça soit les URLs du client OIDC, donc le back, et non le front qui n'est pas le client.
+
+Ou alors utiliser une session pour enregistrer l'URL d'origine et rediriger vers cette URL tout à la fin.
