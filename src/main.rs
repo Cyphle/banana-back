@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::Mutex;
+use std::sync::Mutex;
 use url::Url;
 
 mod config;
@@ -101,9 +101,17 @@ async fn main() -> std::io::Result<()> {
                     .cookie_name("actix_cookie".to_string())
                     .build(),
             )
-            .app_data(web::Data::new(client.clone()))
+            // .app_data(web::Data::new(client.clone()))
+            .app_data(web::Data::new(ActixWebData {
+                client: client.clone(),
+                session_tokens: Mutex::new(HashMap::new()),
+                counter: Mutex::new(0),
+            }))
             .route("/set_session", web::get().to(set_session))
             .route("/get_session", web::get().to(get_session))
+            .route("/increment", web::get().to(increment_counter))
+            .route("/reset", web::get().to(reset_counter))
+            .route("/get", web::get().to(get_counter))
             .service(login)
     })
     .bind("127.0.0.1:8080")?
@@ -115,28 +123,44 @@ async fn main() -> std::io::Result<()> {
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
 
-////////// SESSION //////////
+////////// WEB DATA //////////
+async fn increment_counter(data: web::Data<ActixWebData>) -> impl Responder {
+    let mut counter = data.counter.lock().unwrap();
+    *counter += 1;
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
-pub struct CustomBearer {
-    pub access_token: String,
-    pub token_type: String,
-    pub scope: Option<String>,
-    pub state: Option<String>,
-    pub refresh_token: Option<String>,
-    pub expires_in: Option<u64>,
-    pub id_token: String,
-    #[serde(flatten)]
-    pub extra: Option<HashMap<String, serde_json::Value>>,
+    info!("Counter incremented to: {}", counter);
+    HttpResponse::Ok().body(format!("Counter incremented to: {}", counter))
 }
 
-impl Display for CustomBearer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // match self.id_token.as_ref() {
-        //     Some(id_token) => write!(f, "{} {}", self.access_token, id_token),
-        //     None => write!(f, "{}", self.access_token),
-        // }
-        write!(f, "{} {}", self.access_token, self.id_token)
+// Handler to reset the counter
+async fn reset_counter(data: web::Data<ActixWebData>) -> impl Responder {
+    let mut counter = data.counter.lock().unwrap();
+    *counter = 0;
+    HttpResponse::Ok().body("Counter reset to 0")
+}
+
+async fn get_counter(data: web::Data<ActixWebData>) -> impl Responder {
+    let counter = data.counter.lock().unwrap();
+
+    info!("Current counter: {}", counter);
+    HttpResponse::Ok().body(format!("Current counter: {}", counter))
+}
+
+
+////////// SESSION //////////
+struct ActixWebData {
+    pub client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
+    pub session_tokens: Mutex<HashMap<u64, Bearer>>,
+    pub counter: Mutex<i32>,
+}
+
+impl ActixWebData {
+    async fn get_token(&self, key: &u64) -> Option<Bearer> {
+        self.session_tokens.lock().unwrap().get(key).cloned()
+    }
+
+    async fn set_token(&mut self, key: &u64, token: Bearer) {
+        self.session_tokens.lock().unwrap().insert(*key, token);
     }
 }
 
@@ -166,15 +190,22 @@ fn save_token_in_session(session: &Session, token: &Bearer) {
 // Route to retrieve data from the session
 async fn get_session(
     session: Session,
-    client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
+    // client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
+    state: web::Data<ActixWebData>,
     _: web::Query<AuthRequest>,
 ) -> impl Responder {
-    let user_id = session.get::<CustomBearer>("user_id");
+    let user_id = session.get::<u64>("user_id");
+
+    let counter = state.counter.lock().unwrap();
+    info!("Counter in get_session: {:?}", counter);
 
     match user_id {
         Ok(user_id) => match user_id {
             Some(user_id) => {
                 info!("User ID found in session: {}", user_id);
+
+                let token = state.session_tokens.lock().unwrap().get(&user_id).cloned();
+                info!("Token in session: {:?}", token);
                 HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id))
             },
             None => {
@@ -194,10 +225,11 @@ async fn get_session(
 #[get("/login")]
 async fn login(
     session: Session,
-    client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
+    // client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
+    state: web::Data<ActixWebData>,
     query: web::Query<AuthRequest>,
 ) -> impl Responder {
-    let client = client.lock().await;
+    let client = state.client.lock().unwrap();
 
     info!("Login with query: {:?}", query);
 
@@ -214,29 +246,25 @@ async fn login(
                 Ok(token) => {
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
-                    info!("ID token in authenticate: {}", id_token.clone().unwrap());
 
                     // save_token_in_session(&session, &token.bearer);
                     // Notes
                     /*
                         Bon ça marche pas de serializer tout le token en session. Il faut créer une autre struct qui save les token in memory et avec une clé un hash ou uuid et en session on save l'uuid
                      */
-                    let bearer: Bearer = token.bearer.clone();
-                    let another_bearer = CustomBearer {
-                        access_token: bearer.access_token.clone(),
-                        token_type: bearer.token_type,
-                        scope: bearer.scope,
-                        state: bearer.state,
-                        refresh_token: bearer.refresh_token,
-                        expires_in: bearer.expires_in,
-                        id_token: id_token.clone().unwrap(),
-                        extra: bearer.extra,
-                    };
-                    let saved = session.insert("user_id", another_bearer);
+                    state.session_tokens.lock().unwrap().insert(42, token.bearer.clone());
+                    let token = state.session_tokens.lock().unwrap().get(&42).cloned();
+                    info!("Token in session in authenticate: {:?}", token);
+
+                    let saved = session.insert("user_id", 42);
                     match saved {
                         Ok(_) => info!("Token saved in session"),
                         Err(e) => error!("Error saving token in session: {}", e),
                     }
+
+                    let mut counter = state.counter.lock().unwrap();
+                    *counter += 1;
+
 
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
