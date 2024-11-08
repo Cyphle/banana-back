@@ -49,16 +49,8 @@ async fn main() -> std::io::Result<()> {
     // ACTIX
     // let _ = config::actix::config(static_db).await;
 
-    // repositories::profiles::create(static_db, &CreateProfileCommand {
-    //     username: "johndoe".to_string(),
-    //     email: "johndoe".to_string(),
-    //     first_name: "John".to_string(),
-    //     last_name: "Doe".to_string(),
-    // }).await.unwrap();
 
-    // log::info!("Application is now closed");
-
-    /* OPENID CONNECT */
+    /* OPENID CONNECT AND TESTS */
     // Set up Keycloak OIDC parameters
     let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana");
     let client_id = "banana";
@@ -78,8 +70,12 @@ async fn main() -> std::io::Result<()> {
     // Wrap client in Arc and Mutex for sharing across Actix handlers
     let client = Arc::new(Mutex::new(client));
     // Generate a secure 32-byte key for cookie signing (use a random key in production)
-    // let secret_key = Key::generate();
-    let secret_key = Key::from(&[0; 64]);
+    let secret_key = Key::generate();
+
+    let state = web::Data::new(AppState {
+        client: client.clone(),
+        store: Mutex::new(HashMap::new()),
+    });
 
     // Start Actix server
     HttpServer::new(move || {
@@ -101,11 +97,10 @@ async fn main() -> std::io::Result<()> {
                     .cookie_name("actix_cookie".to_string())
                     .build(),
             )
-            // .app_data(web::Data::new(client.clone()))
-            .app_data(web::Data::new(ActixWebData {
-                client: client.clone(),
-            }))
+            .app_data(state.clone())
             .route("/get_session", web::get().to(get_session))
+            .route("/set", web::get().to(set_key))     
+            .route("/get", web::get().to(get_key)) 
             .service(login)
     })
     .bind("127.0.0.1:8080")?
@@ -117,16 +112,39 @@ async fn main() -> std::io::Result<()> {
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
 
+///////// SHARED MUTABLE STATE //////////
+#[derive(Serialize)]
+struct GetResponse {
+    key: String,
+    value: Option<String>,
+}
+
+// Handler to set a key-value pair
+async fn set_key(data: web::Data<AppState>) -> impl Responder {
+    let mut store = data.store.lock().unwrap();
+    store.insert("hello".to_string(), "world".to_string());
+    HttpResponse::Ok().json("Key set successfully")
+}
+
+// Handler to get a value by key
+async fn get_key(data: web::Data<AppState>) -> impl Responder {
+    let store = data.store.lock().unwrap();
+    let value = store.get(&"hello".to_string()).cloned();
+    HttpResponse::Ok().json(GetResponse { key: "hello".to_string(), value })
+}
+
+
 ////////// SESSION //////////
-struct ActixWebData {
-    pub client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
+struct AppState {
+    client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
+    store: Mutex<HashMap<String, String>>,
 }
 
 // Route to retrieve data from the session
 async fn get_session(
     session: Session,
     // client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
-    state: web::Data<ActixWebData>,
+    state: web::Data<AppState>,
     _: web::Query<AuthRequest>,
 ) -> impl Responder {
     let user_id = session.get::<CustomToken>("user_id");
@@ -167,7 +185,7 @@ impl Display for CustomToken {
 async fn login(
     session: Session,
     // client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
-    state: web::Data<ActixWebData>,
+    state: web::Data<AppState>,
     query: web::Query<AuthRequest>,
 ) -> impl Responder {
     let client = state.client.lock().unwrap();
