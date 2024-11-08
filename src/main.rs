@@ -122,10 +122,10 @@ struct GetResponse {
 // Handler to set a key-value pair
 async fn set_key(data: web::Data<AppState>) -> impl Responder {
     let mut store = data.store.lock().unwrap();
-    store.insert("hello".to_string(), CustomToken {
-        access_token: "myaccess".to_string(),
-        id_token: "myid".to_string(),
-    });
+    // store.insert("hello".to_string(), CustomToken {
+    //     access_token: "myaccess".to_string(),
+    //     id_token: "myid".to_string(),
+    // });
     HttpResponse::Ok().json("Key set successfully")
 }
 
@@ -133,14 +133,17 @@ async fn set_key(data: web::Data<AppState>) -> impl Responder {
 async fn get_key(data: web::Data<AppState>) -> impl Responder {
     let store = data.store.lock().unwrap();
     let value = store.get(&"hello".to_string()).cloned();
-    HttpResponse::Ok().json(GetResponse { key: "hello".to_string(), value })
+    HttpResponse::Ok().json(GetResponse { key: "hello".to_string(), value: value.map(|bearer| CustomToken {
+        access_token: bearer.access_token.clone(),
+        id_token: bearer.id_token.clone().unwrap(),
+    }) })
 }
 
 
 ////////// SESSION //////////
 struct AppState {
     client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
-    store: Mutex<HashMap<String, CustomToken>>,
+    store: Mutex<HashMap<String, Bearer>>,
 }
 
 // Route to retrieve data from the session
@@ -221,10 +224,11 @@ async fn login(
 
                     // Save in shared state
                     let mut store = state.store.lock().unwrap();
-                    store.insert("hello".to_string(), CustomToken {
-                        access_token: token.bearer.access_token.clone(),
-                        id_token: token.bearer.id_token.clone().unwrap(),
-                    });
+                    // store.insert("hello".to_string(), CustomToken {
+                    //     access_token: token.bearer.access_token.clone(),
+                    //     id_token: token.bearer.id_token.clone().unwrap(),
+                    // });
+                    store.insert("hello".to_string(), token.bearer.clone());
 
 
 
