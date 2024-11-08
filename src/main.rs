@@ -1,13 +1,24 @@
 use actix_cors::Cors;
+use actix_session::{SessionMiddleware, storage::CookieSessionStore};
+use actix_session::Session;
+use actix_web::cookie::Key;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use log::debug;
 use log::error;
 use log::info;
+use openid::error::Error;
+use openid::Bearer;
+use openid::DiscoveredClient;
 use openid::IdToken;
+use openid::TokenIntrospection;
+use openid::Userinfo;
 use openid::{Client, Options, StandardClaims, Token};
+use reqwest::Client as HttpClient;
 use serde::Deserialize;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::Mutex;
 use url::Url;
 
@@ -33,24 +44,23 @@ async fn main() -> std::io::Result<()> {
     // let db = config::database::connect().await.unwrap();
     // let static_db = Box::leak(Box::new(db));
 
-    /* OPENID CONNECT */
-    // NOTES TODO
-    /*
-       Il faut une unique route /login qui gère les deux /authorize et /token
-       1. Quand on arrive sur le front, si le user n'est pas logged, appeler /login sans aucun paramètre
-       2. On appelle la méthode authenticate existante ici
-       3. On arrive sur la page d'auth de keycloak, on sélectionne un compte, on valide
-       4. On est redirigé vers /callback avec un code, callback qui est une URL du front. (genre le /login du front).
-       5. Si le front voit un paramètre code dans l'url, on appelle la méthode /login du back avec ce code
-       6. On récupère le token et on le sauvegarde dans un cookie
-       7. On peut appeler les autres endpoints
-    */
+    // ACTIX
+    // let _ = config::actix::config(static_db).await;
 
+    // repositories::profiles::create(static_db, &CreateProfileCommand {
+    //     username: "johndoe".to_string(),
+    //     email: "johndoe".to_string(),
+    //     first_name: "John".to_string(),
+    //     last_name: "Doe".to_string(),
+    // }).await.unwrap();
+
+    // log::info!("Application is now closed");
+
+    /* OPENID CONNECT */
     // Set up Keycloak OIDC parameters
     let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana");
     let client_id = "banana";
     let client_secret = "banana-secret";
-    // let redirect_uri = "http://localhost:9000/login";
     let redirect_uri = "http://localhost:9000/login";
 
     // Initialize OpenID Client with Keycloak discovery
@@ -65,6 +75,8 @@ async fn main() -> std::io::Result<()> {
 
     // Wrap client in Arc and Mutex for sharing across Actix handlers
     let client = Arc::new(Mutex::new(client));
+    // Generate a secure 32-byte key for cookie signing (use a random key in production)
+    let secret_key = Key::generate();
 
     // Start Actix server
     HttpServer::new(move || {
@@ -77,7 +89,10 @@ async fn main() -> std::io::Result<()> {
                     .supports_credentials() // Optional, if credentials are used
                     .max_age(3600),
             )
+            .wrap(SessionMiddleware::new(CookieSessionStore::default(), secret_key.clone()))
             .app_data(web::Data::new(client.clone()))
+            .route("/set_session", web::get().to(set_session))
+            .route("/get_session", web::get().to(get_session))
             .service(login)
     })
     .bind("127.0.0.1:8080")?
@@ -86,21 +101,35 @@ async fn main() -> std::io::Result<()> {
 
     /* END OPENID CONNECT */
 
-    // ACTIX
-    // let _ = config::actix::config(static_db).await;
-
-    // repositories::profiles::create(static_db, &CreateProfileCommand {
-    //     username: "johndoe".to_string(),
-    //     email: "johndoe".to_string(),
-    //     first_name: "John".to_string(),
-    //     last_name: "Doe".to_string(),
-    // }).await.unwrap();
-
-    // log::info!("Application is now closed");
-
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
 
+////////// SESSION //////////
+// Route to set data in the session
+async fn set_session(session: Session) -> impl Responder {
+    let res = session.insert("user_id", 42);
+    match res {
+        Ok(_) => HttpResponse::Ok().body("Session data set"),
+        Err(e) => HttpResponse::Ok().body(format!("Error setting session data: {}", e)),
+    }
+}
+
+// Route to retrieve data from the session
+async fn get_session(session: Session) -> impl Responder {
+    let user_id = session.get::<i32>("user_id");
+
+    match user_id {
+        Ok(user_id) => {
+            match user_id {
+                Some(user_id) => HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id)),
+                None => HttpResponse::Ok().body("No user ID found in session"),
+            }
+        },
+        Err(e) => HttpResponse::Ok().body(format!("No session data found: {}", e)),
+    }
+}
+
+////////// OIDC //////////
 #[get("/login")]
 async fn login(
     client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
@@ -114,14 +143,13 @@ async fn login(
         Some(code) => {
             let authorization_code: &&String = &code;
 
-            info!("Requesting token with received authorization code: {}", authorization_code);
+            info!(
+                "Requesting token with received authorization code: {}",
+                authorization_code
+            );
 
             match client.authenticate(authorization_code, None, None).await {
                 Ok(token) => {
-                    // info!("Forged token: {:?}", token.bearer);
-                    info!("ID token: {:?}", token.id_token.unwrap().payload().unwrap().userinfo); // La on a les infos. faut les extraires
-                    // { sub: None, name: Some("John Doe"), given_name: Some("John"), family_name: Some("Doe"), middle_name: None, nickname: None, preferred_username: Some("john.doe"), profile: None, picture: None, website: None, email: Some("john.doe@banana.com"), email_verified: false, gender: None, birthdate: None, zoneinfo: None, locale: None, phone_number: None, phone_number_verified: false, address: None, updated_at: None }
-
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
 
@@ -150,4 +178,41 @@ async fn login(
                 .finish()
         }
     }
+}
+
+// GETTING INFO FROM ID TOKEN
+/*
+    How to use:
+*/
+fn get_info_from_id_token(id_token: &IdToken<StandardClaims>) -> Userinfo {
+    id_token.payload().cloned().unwrap().userinfo
+}
+
+// VALIDATING/INTROSPECTING TOKEN
+/*
+    How to use:
+    // Validating access token
+    let token_from_bearer = introspect_token_from_bearer(&client, token.bearer.clone()).await;
+    // Validating from token
+    let introspection = introspect_token(&client, &token).await;
+
+    match introspection {
+        Ok(intro) => info!("Token introspection successful: {:?}", intro),
+        Err(e) => error!("Token introspection failed: {:?}", e)
+    }
+    // End validating access token
+*/
+async fn introspect_token(
+    client: &DiscoveredClient,
+    token: &Token,
+) -> Result<TokenIntrospection<StandardClaims>, Error> {
+    client.request_token_introspection(&token).await
+}
+
+async fn introspect_token_from_bearer(
+    client: &DiscoveredClient,
+    bearer: Bearer,
+) -> Result<TokenIntrospection<StandardClaims>, Error> {
+    let token = Token::from(bearer);
+    client.request_token_introspection(&token).await
 }
