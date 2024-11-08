@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
     // Wrap client in Arc and Mutex for sharing across Actix handlers
     let client = Arc::new(Mutex::new(client));
     // Generate a secure 32-byte key for cookie signing (use a random key in production)
-    let secret_key = Key::generate();
+    let secret_key = Key::from(&[0; 64]);
 
     let state = web::Data::new(AppState {
         client: client.clone(),
@@ -116,13 +116,16 @@ async fn main() -> std::io::Result<()> {
 #[derive(Serialize)]
 struct GetResponse {
     key: String,
-    value: Option<String>,
+    value: Option<CustomToken>,
 }
 
 // Handler to set a key-value pair
 async fn set_key(data: web::Data<AppState>) -> impl Responder {
     let mut store = data.store.lock().unwrap();
-    store.insert("hello".to_string(), "world".to_string());
+    store.insert("hello".to_string(), CustomToken {
+        access_token: "myaccess".to_string(),
+        id_token: "myid".to_string(),
+    });
     HttpResponse::Ok().json("Key set successfully")
 }
 
@@ -137,7 +140,7 @@ async fn get_key(data: web::Data<AppState>) -> impl Responder {
 ////////// SESSION //////////
 struct AppState {
     client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
-    store: Mutex<HashMap<String, String>>,
+    store: Mutex<HashMap<String, CustomToken>>,
 }
 
 // Route to retrieve data from the session
@@ -167,7 +170,7 @@ async fn get_session(
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct CustomToken {
     access_token: String,
     id_token: String,
@@ -206,26 +209,22 @@ async fn login(
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
 
-                    // save_token_in_session(&session, &token.bearer);
-                    // Notes TODO IMPORTANTS
-                    /*
-                        Bon ça marche pas de serializer tout le token en session. Il faut créer une autre struct qui save les token in memory et avec une clé un hash ou uuid et en session on save l'uuid
-                        Essayer de serializer un objet => ça marche. faut faire un truc du genre mais option se serialize pas bien
-
-                    Mais ce serait bien de faire marcher le shared state
-                     */
-                    // state.session_tokens.lock().unwrap().insert(42, token.bearer.clone());
-                    // let token = state.session_tokens.lock().unwrap().get(&42).cloned();
-                    // info!("Token in session in authenticate: {:?}", token);
-
+                    // Save in session
                     let saved = session.insert("user_id", CustomToken {
                         access_token: access_token.clone(),
-                        id_token: "myidtoken".to_string(),
+                        id_token: token.bearer.id_token.clone().unwrap(),
                     });
                     match saved {
                         Ok(_) => info!("Token saved in session"),
                         Err(e) => error!("Error saving token in session: {}", e),
                     }
+
+                    // Save in shared state
+                    let mut store = state.store.lock().unwrap();
+                    store.insert("hello".to_string(), CustomToken {
+                        access_token: token.bearer.access_token.clone(),
+                        id_token: token.bearer.id_token.clone().unwrap(),
+                    });
 
 
 
