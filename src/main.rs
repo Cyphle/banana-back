@@ -136,6 +136,7 @@ async fn get_key(data: web::Data<AppState>) -> impl Responder {
     HttpResponse::Ok().json(GetResponse { key: "hello".to_string(), value: value.map(|bearer| CustomToken {
         access_token: bearer.access_token.clone(),
         id_token: bearer.id_token.clone().unwrap(),
+        toto: None,
     }) })
 }
 
@@ -158,7 +159,7 @@ async fn get_session(
     match user_id {
         Ok(user_id) => match user_id {
             Some(user_id) => {
-                info!("User ID found in session: {}", user_id);
+                info!("User ID found in session no toto?: {}", user_id);
                 HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id))
             },
             None => {
@@ -177,14 +178,17 @@ async fn get_session(
 struct CustomToken {
     access_token: String,
     id_token: String,
+    toto: Option<String>,
 }
 
 impl Display for CustomToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "CustomToken {{ access_token: {}, id_token: {} }}", self.access_token, self.id_token)
+        write!(f, "CustomToken {{ access_token: {}, id_token: {}, toto: {} }}", 
+        self.access_token, 
+        self.id_token, 
+        self.toto.as_ref().unwrap_or(&"one".to_string()))
     }
 }
-
 
 ////////// OIDC //////////
 #[get("/login")]
@@ -216,6 +220,7 @@ async fn login(
                     let saved = session.insert("user_id", CustomToken {
                         access_token: access_token.clone(),
                         id_token: token.bearer.id_token.clone().unwrap(),
+                        toto: Some("toto".to_string()),
                     });
                     match saved {
                         Ok(_) => info!("Token saved in session"),
