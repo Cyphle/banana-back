@@ -20,8 +20,8 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::Arc;
-use std::time::Duration;
 use std::sync::Mutex;
+use std::time::Duration;
 use url::Url;
 
 mod config;
@@ -48,7 +48,6 @@ async fn main() -> std::io::Result<()> {
 
     // ACTIX
     // let _ = config::actix::config(static_db).await;
-
 
     /* OPENID CONNECT AND TESTS */
     // Set up Keycloak OIDC parameters
@@ -99,8 +98,8 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(state.clone())
             .route("/get_session", web::get().to(get_session))
-            .route("/set", web::get().to(set_key))     
-            .route("/get", web::get().to(get_key)) 
+            .route("/set", web::get().to(set_key))
+            .route("/get", web::get().to(get_key))
             .service(login)
     })
     .bind("127.0.0.1:8080")?
@@ -133,13 +132,11 @@ async fn set_key(data: web::Data<AppState>) -> impl Responder {
 async fn get_key(data: web::Data<AppState>) -> impl Responder {
     let store = data.store.lock().unwrap();
     let value = store.get(&"hello".to_string()).cloned();
-    HttpResponse::Ok().json(GetResponse { key: "hello".to_string(), value: value.map(|bearer| CustomToken {
-        access_token: bearer.access_token.clone(),
-        id_token: bearer.id_token.clone().unwrap(),
-        toto: None,
-    }) })
+    HttpResponse::Ok().json(GetResponse {
+        key: "hello".to_string(),
+        value: value.map(|bearer| CustomToken::from(bearer)),
+    })
 }
-
 
 ////////// SESSION //////////
 struct AppState {
@@ -159,34 +156,61 @@ async fn get_session(
     match user_id {
         Ok(user_id) => match user_id {
             Some(user_id) => {
-                info!("User ID found in session no toto?: {}", user_id);
+                info!("User ID found in session: {}", user_id);
                 HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id))
-            },
+            }
             None => {
                 error!("No user ID found in session");
                 HttpResponse::Ok().body("No user ID found in session")
-            },
+            }
         },
         Err(e) => {
             error!("No session data found: {}", e);
             HttpResponse::Ok().body(format!("No session data found: {}", e))
-        },
+        }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 struct CustomToken {
     access_token: String,
-    id_token: String,
-    toto: Option<String>,
+    token_type: String,
+    scope: Option<String>,
+    state: Option<String>,
+    refresh_token: Option<String>,
+    expires_in: Option<u64>,
+    id_token: Option<String>,
+    #[serde(flatten)]
+    pub extra: Option<HashMap<String, serde_json::Value>>,
 }
 
 impl Display for CustomToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "CustomToken {{ access_token: {}, id_token: {}, toto: {} }}", 
+        write!(f, "CustomToken {{ access_token: {}, token_type: {}, scope: {}, state: {}, refresh token: {}, expires in: {} id token: {}; extra: {:?} }}", 
         self.access_token, 
-        self.id_token, 
-        self.toto.as_ref().unwrap_or(&"one".to_string()))
+        self.token_type, 
+        self.scope.as_ref().unwrap_or(&"".to_string()), 
+        self.state.as_ref().unwrap_or(&"".to_string()), 
+        self.refresh_token.as_ref().unwrap_or(&"".to_string()), 
+        self.expires_in.as_ref().unwrap_or(&0), 
+        self.id_token.as_ref().unwrap_or(&"".to_string()),
+        self.extra.as_ref()
+    )
+    }
+}
+
+impl From<Bearer> for CustomToken {
+    fn from(bearer: Bearer) -> Self {
+        Self {
+            access_token: bearer.access_token.clone(),
+            token_type: bearer.token_type.clone(),
+            scope: bearer.scope.clone(),
+            state: bearer.state.clone(),
+            refresh_token: bearer.refresh_token.clone(),
+            expires_in: bearer.expires_in.clone(),
+            id_token: bearer.id_token.clone(),
+            extra: bearer.extra.clone(),
+        }
     }
 }
 
@@ -216,12 +240,14 @@ async fn login(
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
 
+                    /*
+                    Ca marche pas. faut essayer avec un redis. C'est peut être parce que les cookies ont une taille max.
+                     */
                     // Save in session
-                    let saved = session.insert("user_id", CustomToken {
-                        access_token: access_token.clone(),
-                        id_token: token.bearer.id_token.clone().unwrap(),
-                        toto: Some("toto".to_string()),
-                    });
+                    let saved = session.insert(
+                        "user_id",
+                        CustomToken::from(token.bearer.clone()),
+                    );
                     match saved {
                         Ok(_) => info!("Token saved in session"),
                         Err(e) => error!("Error saving token in session: {}", e),
@@ -234,8 +260,6 @@ async fn login(
                     //     id_token: token.bearer.id_token.clone().unwrap(),
                     // });
                     store.insert("hello".to_string(), token.bearer.clone());
-
-
 
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
