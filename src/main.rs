@@ -5,6 +5,8 @@ use actix_session::Session;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::cookie::{time, Key};
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use config::actix::AppState;
+use config::local::oidc_config::get_oidc_config;
 use log::debug;
 use log::error;
 use log::info;
@@ -16,6 +18,8 @@ use openid::TokenIntrospection;
 use openid::Userinfo;
 use openid::{Client, Options, StandardClaims, Token};
 use reqwest::Client as HttpClient;
+use sea_orm::DatabaseConnection;
+use security::oidc::get_client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -30,6 +34,7 @@ mod domain;
 mod dto;
 mod http;
 mod repositories;
+mod security;
 
 #[derive(Debug, Deserialize)]
 struct AuthRequest {
@@ -43,74 +48,7 @@ async fn main() -> std::io::Result<()> {
     config::logger::config();
 
     log::info!("Starting the application");
-
-    // let db = config::database::connect().await.unwrap();
-    // let static_db = Box::leak(Box::new(db));
-
-    // ACTIX
-    // let _ = config::actix::config(static_db).await;
-
-    /* OPENID CONNECT AND TESTS */
-    // Set up Keycloak OIDC parameters
-    let issuer_url = reqwest::Url::parse("http://localhost:8181/realms/Banana");
-    let client_id = "banana";
-    let client_secret = "banana-secret";
-    let redirect_uri = "http://localhost:9000/login";
-
-    // Initialize OpenID Client with Keycloak discovery
-    let client: Client<openid::Discovered, StandardClaims> = Client::discover(
-        client_id.to_string(),
-        client_secret.to_string(),
-        Some(redirect_uri.to_string()),
-        issuer_url.unwrap(),
-    )
-    .await
-    .expect("Failed to discover OpenID configuration");
-
-    // Wrap client in Arc and Mutex for sharing across Actix handlers
-    let client = Arc::new(Mutex::new(client));
-    // Generate a secure 32-byte key for cookie signing (use a random key in production)
-    let secret_key = Key::from(&[0; 64]);
-    let redis_store = RedisSessionStore::new("redis://127.0.0.1:6379")
-    .await
-    .unwrap();
-
-    let state = web::Data::new(AppState {
-        client: client.clone(),
-        store: Mutex::new(HashMap::new()),
-    });
-
-    // Start Actix server
-    HttpServer::new(move || {
-        App::new()
-            .wrap(
-                Cors::default()
-                    .allowed_origin("http://localhost:9000") // Change to your frontend URL
-                    .allowed_methods(vec!["GET", "POST"])
-                    .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE])
-                    .supports_credentials() // Optional, if credentials are used
-                    .max_age(3600),
-            )
-            .wrap(
-                SessionMiddleware::builder(redis_store.clone(), secret_key.clone())
-                    .session_lifecycle(
-                        PersistentSession::default().session_ttl(time::Duration::days(5)),
-                    )
-                    .cookie_secure(false)
-                    .cookie_name("actix_cookie".to_string())
-                    .build(),
-            )
-            .app_data(state.clone())
-            .route("/get_session", web::get().to(get_session))
-            .route("/set", web::get().to(set_key))
-            .route("/get", web::get().to(get_key))
-            .service(login)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
-
-    /* END OPENID CONNECT */
+    config::actix::config().await
 
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }
@@ -139,10 +77,6 @@ async fn get_key(data: web::Data<AppState>) -> impl Responder {
 }
 
 ////////// SESSION //////////
-struct AppState {
-    client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
-    store: Mutex<HashMap<String, Bearer>>,
-}
 
 // Route to retrieve data from the session
 async fn get_session(
