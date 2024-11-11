@@ -1,5 +1,6 @@
 use actix_cors::Cors;
 use actix_session::config::PersistentSession;
+use actix_session::storage::RedisSessionStore;
 use actix_session::Session;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::cookie::{time, Key};
@@ -70,6 +71,9 @@ async fn main() -> std::io::Result<()> {
     let client = Arc::new(Mutex::new(client));
     // Generate a secure 32-byte key for cookie signing (use a random key in production)
     let secret_key = Key::from(&[0; 64]);
+    let redis_store = RedisSessionStore::new("redis://127.0.0.1:6379")
+    .await
+    .unwrap();
 
     let state = web::Data::new(AppState {
         client: client.clone(),
@@ -88,7 +92,7 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600),
             )
             .wrap(
-                SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                SessionMiddleware::builder(redis_store.clone(), secret_key.clone())
                     .session_lifecycle(
                         PersistentSession::default().session_ttl(time::Duration::days(5)),
                     )
@@ -115,16 +119,12 @@ async fn main() -> std::io::Result<()> {
 #[derive(Serialize)]
 struct GetResponse {
     key: String,
-    value: Option<CustomToken>,
+    value: Option<Bearer>,
 }
 
 // Handler to set a key-value pair
 async fn set_key(data: web::Data<AppState>) -> impl Responder {
     let mut store = data.store.lock().unwrap();
-    // store.insert("hello".to_string(), CustomToken {
-    //     access_token: "myaccess".to_string(),
-    //     id_token: "myid".to_string(),
-    // });
     HttpResponse::Ok().json("Key set successfully")
 }
 
@@ -134,7 +134,7 @@ async fn get_key(data: web::Data<AppState>) -> impl Responder {
     let value = store.get(&"hello".to_string()).cloned();
     HttpResponse::Ok().json(GetResponse {
         key: "hello".to_string(),
-        value: value.map(|bearer| CustomToken::from(bearer)),
+        value: value,
     })
 }
 
@@ -147,17 +147,16 @@ struct AppState {
 // Route to retrieve data from the session
 async fn get_session(
     session: Session,
-    // client: web::Data<Arc<Mutex<Client<openid::Discovered, StandardClaims>>>>,
     state: web::Data<AppState>,
     _: web::Query<AuthRequest>,
 ) -> impl Responder {
-    let user_id = session.get::<CustomToken>("user_id");
+    let user_id = session.get::<Bearer>("user_id");
 
     match user_id {
         Ok(user_id) => match user_id {
             Some(user_id) => {
-                info!("User ID found in session: {}", user_id);
-                HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id))
+                info!("User ID found in session: {}", user_id.access_token.clone());
+                HttpResponse::Ok().body(format!("Welcome back, user {}!", user_id.access_token.clone()))
             }
             None => {
                 error!("No user ID found in session");
@@ -171,48 +170,6 @@ async fn get_session(
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-struct CustomToken {
-    access_token: String,
-    token_type: String,
-    scope: Option<String>,
-    state: Option<String>,
-    refresh_token: Option<String>,
-    expires_in: Option<u64>,
-    id_token: Option<String>,
-    #[serde(flatten)]
-    pub extra: Option<HashMap<String, serde_json::Value>>,
-}
-
-impl Display for CustomToken {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "CustomToken {{ access_token: {}, token_type: {}, scope: {}, state: {}, refresh token: {}, expires in: {} id token: {}; extra: {:?} }}", 
-        self.access_token, 
-        self.token_type, 
-        self.scope.as_ref().unwrap_or(&"".to_string()), 
-        self.state.as_ref().unwrap_or(&"".to_string()), 
-        self.refresh_token.as_ref().unwrap_or(&"".to_string()), 
-        self.expires_in.as_ref().unwrap_or(&0), 
-        self.id_token.as_ref().unwrap_or(&"".to_string()),
-        self.extra.as_ref()
-    )
-    }
-}
-
-impl From<Bearer> for CustomToken {
-    fn from(bearer: Bearer) -> Self {
-        Self {
-            access_token: bearer.access_token.clone(),
-            token_type: bearer.token_type.clone(),
-            scope: bearer.scope.clone(),
-            state: bearer.state.clone(),
-            refresh_token: bearer.refresh_token.clone(),
-            expires_in: bearer.expires_in.clone(),
-            id_token: bearer.id_token.clone(),
-            extra: bearer.extra.clone(),
-        }
-    }
-}
 
 ////////// OIDC //////////
 #[get("/login")]
@@ -240,13 +197,10 @@ async fn login(
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
 
-                    /*
-                    Ca marche pas. faut essayer avec un redis. C'est peut être parce que les cookies ont une taille max.
-                     */
                     // Save in session
                     let saved = session.insert(
                         "user_id",
-                        CustomToken::from(token.bearer.clone()),
+                        token.bearer.clone(),
                     );
                     match saved {
                         Ok(_) => info!("Token saved in session"),
@@ -255,10 +209,6 @@ async fn login(
 
                     // Save in shared state
                     let mut store = state.store.lock().unwrap();
-                    // store.insert("hello".to_string(), CustomToken {
-                    //     access_token: token.bearer.access_token.clone(),
-                    //     id_token: token.bearer.id_token.clone().unwrap(),
-                    // });
                     store.insert("hello".to_string(), token.bearer.clone());
 
                     HttpResponse::Ok().json(HashMap::from([

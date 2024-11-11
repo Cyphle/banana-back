@@ -24,9 +24,18 @@ services:
       - "8181:8080"
     networks:
       - banana
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"  # Expose Redis port on localhost
+    volumes:
+      - redis_data:/data 
       
 volumes:
   bananapgdata:
+  redis_data:
+    driver: local
   
 networks:
   banana:
