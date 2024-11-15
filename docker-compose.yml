@@ -9,6 +9,8 @@ services:
       - "5434:5432"
     volumes:
       - bananapgdata:/var/lib/postgresql/data
+    networks:
+      - banana
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.1
@@ -30,7 +32,9 @@ services:
     ports:
       - "6379:6379"  # Expose Redis port on localhost
     volumes:
-      - redis_data:/data 
+      - redis_data:/data
+    networks:
+      - banana
       
 volumes:
   bananapgdata:

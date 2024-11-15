@@ -1,6 +1,9 @@
-use std::collections::HashMap;
 use std::sync::Arc;
+use std::{collections::HashMap, sync::Mutex};
 
+use crate::http::handlers::actix_store::{add_to_store, get_from_store};
+use crate::http::handlers::session::get_session;
+use crate::security::login::login;
 use crate::{
     config::{
         database::connect,
@@ -21,7 +24,6 @@ use actix_web::{
 use log::info;
 use openid::{Bearer, Client, StandardClaims};
 use sea_orm::DatabaseConnection;
-use tokio::sync::Mutex;
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
@@ -80,10 +82,10 @@ pub async fn config() -> std::io::Result<()> {
             .app_data(state.clone())
             .service(get_profile_by_id)
             .service(create_profile)
-        // .route("/get_session", web::get().to(get_session))
-        // .route("/set", web::get().to(set_key))
-        // .route("/get", web::get().to(get_key))
-        // .service(login)
+            .service(add_to_store)
+            .service(get_from_store)
+            .service(get_session)
+            .service(login)
     })
     .bind("127.0.0.1:8080")?
     .run()
