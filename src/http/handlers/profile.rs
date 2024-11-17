@@ -35,11 +35,12 @@ mod tests {
     use crate::config::actix::AppState;
     use crate::http::handlers::profile::{create_profile, get_profile_by_id};
     use actix_web::http::header::ContentType;
-    use actix_web::{test, App};
     use actix_web::web;
+    use actix_web::{test, App};
     use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
     use sea_orm::prelude::DateTimeWithTimeZone;
     use sea_orm::{DatabaseBackend, DatabaseConnection, MockDatabase};
+    use std::sync::Mutex;
 
     fn get_mock_database() -> &'static DatabaseConnection {
         let d = NaiveDate::from_ymd_opt(2015, 6, 3).unwrap();
@@ -66,7 +67,9 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(web::Data::new(AppState {
-                    db_connection: get_mock_database()
+                    db_connection: get_mock_database(),
+                    oidc_client: None,
+                    store: Mutex::new(std::collections::HashMap::new())
                 }))
                 .service(get_profile_by_id)
         ).await;
@@ -84,7 +87,9 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(web::Data::new(AppState {
-                    db_connection: get_mock_database()
+                    db_connection: get_mock_database(),
+                    oidc_client: None,
+                    store: Mutex::new(std::collections::HashMap::new())
                 }))
                 .service(create_profile)
         ).await;

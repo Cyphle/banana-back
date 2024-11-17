@@ -22,12 +22,12 @@ use actix_web::{
     web, App, HttpServer,
 };
 use log::info;
-use openid::{Bearer, Client, StandardClaims};
+use openid::{Bearer, Client, Discovered, StandardClaims};
 use sea_orm::DatabaseConnection;
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
-    pub client: Arc<Mutex<Client<openid::Discovered, StandardClaims>>>,
+    pub oidc_client: Option<Arc<Mutex<Client<Discovered, StandardClaims>>>>,
     pub store: Mutex<HashMap<String, Bearer>>,
 }
 
@@ -55,7 +55,7 @@ pub async fn config() -> std::io::Result<()> {
 
     let state = web::Data::new(AppState {
         db_connection: static_db,
-        client: client.clone(),
+        oidc_client: Some(client.clone()),
         store: Mutex::new(HashMap::new()),
     });
 

@@ -1,5 +1,5 @@
 use actix_web::{get, web, HttpResponse, Responder};
-use openid::Bearer;
+use openid::{Bearer, Client};
 use serde::Serialize;
 use crate::config::actix::AppState;
 

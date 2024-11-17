@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use actix_session::Session;
 use actix_web::{get, web, HttpResponse, Responder};
 use log::{error, info};
-use openid::Options;
+use openid::{Client, Options};
 use crate::AuthRequest;
 use crate::config::actix::AppState;
 
@@ -13,7 +13,7 @@ async fn login(
     state: web::Data<AppState>,
     query: web::Query<AuthRequest>,
 ) -> impl Responder {
-    let client = state.client.lock().unwrap();
+    let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
 
     info!("Login with query: {:?}", query);
 

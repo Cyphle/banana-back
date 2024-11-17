@@ -1,14 +1,14 @@
 use actix_session::Session;
 use actix_web::{get, web, HttpResponse, Responder};
 use log::{error, info};
-use openid::Bearer;
+use openid::{Bearer, Client};
 use crate::AuthRequest;
 use crate::config::actix::AppState;
 
-#[get("//get-from-session")]
+#[get("/get-from-session")]
 async fn get_session(
     session: Session,
-    state: web::Data<AppState>,
+    _: web::Data<AppState>,
     _: web::Query<AuthRequest>,
 ) -> impl Responder {
     let user_id = session.get::<Bearer>("user_id");
