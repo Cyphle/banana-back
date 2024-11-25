@@ -4,7 +4,6 @@ use actix_session::Session;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
 use log::{error, info};
-use mockall::{automock, predicate};
 use openid::{Bearer, Client, Options, Token};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

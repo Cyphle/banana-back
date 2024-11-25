@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use crate::http::handlers::actix_store::{add_to_store, get_from_store};
 use crate::http::handlers::session::get_session;
-use crate::security::login::login;
+use crate::security::handlers::login::login;
 use crate::{
     config::{
         database::connect,
