@@ -1,26 +1,24 @@
-use std::collections::HashMap;
+use crate::config::actix::AppState;
+use crate::AuthRequest;
 use actix_session::Session;
+use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
 use log::{error, info};
-use openid::{Client, Options};
-use crate::AuthRequest;
-use crate::config::actix::AppState;
+use mockall::{automock, predicate};
+use openid::{Bearer, Client, Options, Token};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
-// TODO clean all this mess and test it
 #[get("/login")]
 async fn login(
     session: Session,
-    state: web::Data<AppState>,
+    state: Data<AppState>,
     query: web::Query<AuthRequest>,
 ) -> impl Responder {
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
 
-    info!("Login with query: {:?}", query);
-
     match &query.code {
-        Some(code) => {
-            let authorization_code: &&String = &code;
-
+        Some(authorization_code) => {
             info!(
                 "Requesting token with received authorization code: {}",
                 authorization_code
@@ -31,19 +29,8 @@ async fn login(
                     let access_token = token.bearer.access_token.clone();
                     let id_token = token.bearer.id_token.clone();
 
-                    // Save in session
-                    let saved = session.insert(
-                        "user_id",
-                        token.bearer.clone(),
-                    );
-                    match saved {
-                        Ok(_) => info!("Token saved in session"),
-                        Err(e) => error!("Failed to save token in session: {}", e)
-                    }
-
-                    // Save in shared state
-                    let mut store = state.store.lock().unwrap();
-                    store.insert("hello".to_string(), token.bearer.clone());
+                    save_in_session(session, &token);
+                    save_in_shared_state(&state, token);
 
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
@@ -59,7 +46,7 @@ async fn login(
         None => {
             info!("No code provided. Starting authentication.");
 
-            // Il faut définir un nonce et max age ici pour réutiliser à priori
+            // TODO Il faut définir un nonce et max age ici pour réutiliser dans la méthode authenticate
             let auth_url = client.auth_url(&Options {
                 scope: Some("openid email profile".into()),
                 ..Default::default()
@@ -69,5 +56,21 @@ async fn login(
                 .append_header(("Location", auth_url.to_string()))
                 .finish()
         }
+    }
+}
+
+fn save_in_shared_state(state: &Data<AppState>, token: Token) {
+    let mut store = state.store.lock().unwrap();
+    store.insert("hello".to_string(), token.bearer.clone());
+}
+
+fn save_in_session(session: Session, token: &Token) {
+    let saved = session.insert(
+        "user_id",
+        token.bearer.clone(),
+    );
+    match saved {
+        Ok(_) => info!("Token saved in session"),
+        Err(e) => error!("Failed to save token in session: {}", e)
     }
 }
