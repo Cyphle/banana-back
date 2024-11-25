@@ -30,7 +30,6 @@ async fn login(
                     let id_token = token.bearer.id_token.clone();
 
                     save_in_session(session, &token);
-                    save_in_shared_state(&state, token);
 
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
@@ -57,11 +56,6 @@ async fn login(
                 .finish()
         }
     }
-}
-
-fn save_in_shared_state(state: &Data<AppState>, token: Token) {
-    let mut store = state.store.lock().unwrap();
-    store.insert("hello".to_string(), token.bearer.clone());
 }
 
 fn save_in_session(session: Session, token: &Token) {
