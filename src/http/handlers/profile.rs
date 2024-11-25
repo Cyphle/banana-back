@@ -6,6 +6,7 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 
 #[get("/profiles/{id}")]
 async fn get_profile_by_id(path: web::Path<i32>, state: web::Data<AppState>) -> impl Responder {
+    // TODO utiliser la session et du coup les tokens et adapter les tests. peut être extraire pour tester facilement
     match repositories::profile::find_one_by_id(&state.db_connection, path.into_inner()).await {
         Ok(Some(todo)) => HttpResponse::Ok().json(todo),
         Ok(None) => HttpResponse::NotFound().body("No profile found"),

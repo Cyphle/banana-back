@@ -30,6 +30,7 @@ async fn login(
 
                     save_in_session(session, &token);
 
+                    // TODO il faut retourner autre chose
                     HttpResponse::Ok().json(HashMap::from([
                         ("access_token", access_token),
                         ("id_token", id_token.unwrap_or_default()),
