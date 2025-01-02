@@ -1,12 +1,12 @@
 use crate::config::actix::AppState;
+use crate::config::local::oidc_config::USER_SESSION_KEY;
 use crate::AuthRequest;
 use actix_session::Session;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
+use chrono::Duration;
 use log::{error, info};
-use openid::{Bearer, Client, Options, Token};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use openid::{Options, Token};
 
 #[get("/login")]
 async fn login(
@@ -23,18 +23,12 @@ async fn login(
                 authorization_code
             );
 
-            match client.authenticate(authorization_code, None, None).await {
+            let nonce: Option<&str> = state.oidc_config.nonce.as_deref();
+            let max_age: Option<&Duration> = state.oidc_config.max_age.as_ref();
+            match client.authenticate(authorization_code, nonce, max_age).await {
                 Ok(token) => {
-                    let access_token = token.bearer.access_token.clone();
-                    let id_token = token.bearer.id_token.clone();
-
                     save_in_session(session, &token);
-
-                    // TODO il faut retourner autre chose
-                    HttpResponse::Ok().json(HashMap::from([
-                        ("access_token", access_token),
-                        ("id_token", id_token.unwrap_or_default()),
-                    ]))
+                    HttpResponse::Ok().finish()
                 }
                 Err(err) => {
                     error!("Error exchanging code for token: {:?}", err);
@@ -48,6 +42,8 @@ async fn login(
             // TODO Il faut définir un nonce et max age ici pour réutiliser dans la méthode authenticate
             let auth_url = client.auth_url(&Options {
                 scope: Some("openid email profile".into()),
+                nonce: state.oidc_config.nonce.clone(),
+                max_age: state.oidc_config.max_age.clone(),
                 ..Default::default()
             });
 
@@ -60,7 +56,7 @@ async fn login(
 
 fn save_in_session(session: Session, token: &Token) {
     let saved = session.insert(
-        "user_id",
+        USER_SESSION_KEY,
         token.bearer.clone(),
     );
     match saved {

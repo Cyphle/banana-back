@@ -8,7 +8,7 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 async fn get_profile_by_id(path: web::Path<i32>, state: web::Data<AppState>) -> impl Responder {
     // TODO utiliser la session et du coup les tokens et adapter les tests. peut être extraire pour tester facilement
     match repositories::profile::find_one_by_id(&state.db_connection, path.into_inner()).await {
-        Ok(Some(todo)) => HttpResponse::Ok().json(todo),
+        Ok(Some(profile)) => HttpResponse::Ok().json(profile),
         Ok(None) => HttpResponse::NotFound().body("No profile found"),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
@@ -34,6 +34,7 @@ async fn create_profile(payload: web::Json<CreateProfileRequest>, state: web::Da
 #[cfg(test)]
 mod tests {
     use crate::config::actix::AppState;
+    use crate::config::local::oidc_config::get_oidc_config;
     use crate::http::handlers::profile::{create_profile, get_profile_by_id};
     use actix_web::http::header::ContentType;
     use actix_web::web;
@@ -70,7 +71,8 @@ mod tests {
                 .app_data(web::Data::new(AppState {
                     db_connection: get_mock_database(),
                     oidc_client: None,
-                    store: Mutex::new(std::collections::HashMap::new())
+                    store: Mutex::new(std::collections::HashMap::new()),
+                    oidc_config: get_oidc_config().clone(),
                 }))
                 .service(get_profile_by_id)
         ).await;
@@ -90,7 +92,8 @@ mod tests {
                 .app_data(web::Data::new(AppState {
                     db_connection: get_mock_database(),
                     oidc_client: None,
-                    store: Mutex::new(std::collections::HashMap::new())
+                    store: Mutex::new(std::collections::HashMap::new()),
+                    oidc_config: get_oidc_config().clone(),
                 }))
                 .service(create_profile)
         ).await;

@@ -4,6 +4,7 @@ use std::{collections::HashMap, sync::Mutex};
 use crate::http::handlers::actix_store::{add_to_store, get_from_store};
 use crate::http::handlers::session::get_session;
 use crate::security::handlers::login::login;
+use crate::security::oidc::OidcConfig;
 use crate::{
     config::{
         database::connect,
@@ -29,6 +30,7 @@ pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
     pub oidc_client: Option<Arc<Mutex<Client<Discovered, StandardClaims>>>>,
     pub store: Mutex<HashMap<String, Bearer>>,
+    pub oidc_config: OidcConfig,
 }
 
 pub struct SessionConfig {
@@ -44,7 +46,8 @@ pub async fn config() -> std::io::Result<()> {
     let static_db = Box::leak(Box::new(db));
 
     // OIDC
-    let client = Arc::new(Mutex::new(get_client(&get_oidc_config()).await));
+    let oidc_config = get_oidc_config();
+    let client = Arc::new(Mutex::new(get_client(&oidc_config).await));
 
     // Session
     let session_config = get_session_config();
@@ -57,6 +60,7 @@ pub async fn config() -> std::io::Result<()> {
         db_connection: static_db,
         oidc_client: Some(client.clone()),
         store: Mutex::new(HashMap::new()),
+        oidc_config: oidc_config.clone(),
     });
 
     // Actix
