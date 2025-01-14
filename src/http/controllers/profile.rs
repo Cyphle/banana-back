@@ -7,6 +7,7 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 #[get("/profiles/{id}")]
 async fn get_profile_by_id(path: web::Path<i32>, state: web::Data<AppState>) -> impl Responder {
     // TODO utiliser la session et du coup les tokens et adapter les tests. peut être extraire pour tester facilement
+    // TODO pour isoler les trucs facilement testable, il faut que la définition de endpoint ne contiennent rien. Ajoutons une couche adapter qui fait la ligne 11
     match repositories::profile::find_one_by_id(&state.db_connection, path.into_inner()).await {
         Ok(Some(profile)) => HttpResponse::Ok().json(profile),
         Ok(None) => HttpResponse::NotFound().body("No profile found"),
@@ -35,7 +36,7 @@ async fn create_profile(payload: web::Json<CreateProfileRequest>, state: web::Da
 mod tests {
     use crate::config::actix::AppState;
     use crate::config::local::oidc_config::get_oidc_config;
-    use crate::http::handlers::profile::{create_profile, get_profile_by_id};
+    use crate::http::controllers::profile::{create_profile, get_profile_by_id};
     use actix_web::http::header::ContentType;
     use actix_web::web;
     use actix_web::{test, App};

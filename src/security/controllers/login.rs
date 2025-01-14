@@ -39,7 +39,6 @@ async fn login(
         None => {
             info!("No code provided. Starting authentication.");
 
-            // TODO Il faut définir un nonce et max age ici pour réutiliser dans la méthode authenticate
             let auth_url = client.auth_url(&Options {
                 scope: Some("openid email profile".into()),
                 nonce: state.oidc_config.nonce.clone(),

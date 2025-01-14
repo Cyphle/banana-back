@@ -3,7 +3,7 @@ mod integration_test {
     // use super::*;
     // use actix_web::{App, test};
     // use actix_web::http::header::ContentType;
-    // use crate::handlers::todo_handlers::{create_todo, get_todos, get_todo_by_id};
+    // use crate::controllers::todo_handlers::{create_todo, get_todos, get_todo_by_id};
     // use crate::models::todo::TodoView;
     //
     // #[actix_web::test]

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use std::{collections::HashMap, sync::Mutex};
 
-use crate::http::handlers::actix_store::{add_to_store, get_from_store};
-use crate::http::handlers::session::get_session;
-use crate::security::handlers::login::login;
+use crate::http::controllers::actix_store::{add_to_store, get_from_store};
+use crate::http::controllers::session::get_session;
+use crate::security::controllers::login::login;
 use crate::security::oidc::OidcConfig;
 use crate::{
     config::{
@@ -13,11 +13,12 @@ use crate::{
             session_config::get_session_config,
         },
     },
-    http::handlers::profile::{create_profile, get_profile_by_id},
+    http::controllers::profile::{create_profile, get_profile_by_id},
     security::oidc::get_client,
 };
 use actix_cors::Cors;
 use actix_session::{config::PersistentSession, storage::RedisSessionStore, SessionMiddleware};
+use actix_session::storage::CookieSessionStore;
 use actix_web::{
     cookie::{time, Key},
     web, App, HttpServer,

@@ -1,3 +1,3 @@
 pub mod oidc;
 pub mod token;
-pub mod handlers;
+pub mod controllers;
