@@ -47,7 +47,8 @@ config::actix::config(static_db).await;
 - See `config::logger`
 - Use macros `log::info!`, `log::error!`, `log::warn!`, `log::debug!`, `log::trace!`
 
-### OIDC
+### TODO
+1. Faire ça
 Pour supprimer le bout de code du front qui fait 
 ```
 useEffect(() => {
@@ -65,3 +66,11 @@ useEffect(() => {
 Il faut ajouter de la gestion de session ou alors trimballer un paramètre qui s'appelle genre 'next_url' qui est l'URL d'origine du front et rediriger vers cette URL tout à la fin. On peut alors paramétrer les redirect URLs pour que ça soit les URLs du client OIDC, donc le back, et non le front qui n'est pas le client.
 
 Ou alors utiliser une session pour enregistrer l'URL d'origine et rediriger vers cette URL tout à la fin.
+2. Avoir des endpoints de compte (create, list, get one)
+3. Github Action : build test
+4. Front
+5. Docker + Descripteurs kube et deploy sur minikube
+6. EKS + Terraform ou ECS + Terraform
+7. Helm
+8. Logs avec cloudwatch
+9. Monitoring avec opentelemetry genre prometheus
