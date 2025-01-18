@@ -47,6 +47,10 @@ config::actix::config(static_db).await;
 - See `config::logger`
 - Use macros `log::info!`, `log::error!`, `log::warn!`, `log::debug!`, `log::trace!`
 
+### OIDC
+- See `config::oidc`
+- See crate `security`
+
 ### TODO
 2. Avoir des endpoints de profile et de compte (create, list, get one, delete)
 3. Github Action : build test
