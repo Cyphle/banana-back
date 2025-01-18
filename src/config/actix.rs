@@ -26,6 +26,7 @@ use actix_web::{
 use log::info;
 use openid::{Bearer, Client, Discovered, StandardClaims};
 use sea_orm::DatabaseConnection;
+use crate::security::controllers::logout::logout;
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,

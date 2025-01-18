@@ -48,6 +48,21 @@ config::actix::config(static_db).await;
 - Use macros `log::info!`, `log::error!`, `log::warn!`, `log::debug!`, `log::trace!`
 
 ### TODO
+1. Logout
+    a. Créer un endpoint logout
+    b. Le endpoint doit pouvoir générer une URL à partir d'un id token et appeler le logout endpoint et renvoyer un 201:redirec::logout url (à ajouter dans les param ou renvoyer vers redirect_uri)
+    c. Supprimer le user de la session
+
+   // Call the function
+   match logout(&client, &user_id.clone().id_token.unwrap(), post_logout_redirect_uri).await {
+       Ok(logout_url) => {
+       info!("Logout URL: {}", logout_url);
+       }
+       Err(e) => {
+       error!("Error generating logout URL: {}", e);
+       }
+    }
+
 2. Avoir des endpoints de compte (create, list, get one)
 3. Github Action : build test
 4. Front
