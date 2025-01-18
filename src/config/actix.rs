@@ -27,6 +27,7 @@ use log::info;
 use openid::{Bearer, Client, Discovered, StandardClaims};
 use sea_orm::DatabaseConnection;
 use crate::security::controllers::logout::logout;
+use crate::security::controllers::register::register;
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
@@ -94,6 +95,7 @@ pub async fn config() -> std::io::Result<()> {
             .service(delete_session)
             .service(login)
             .service(logout)
+            .service(register)
     })
     .bind("127.0.0.1:8080")?
     .run()

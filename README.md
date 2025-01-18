@@ -52,6 +52,7 @@ config::actix::config(static_db).await;
 - See crate `security`
 
 ### TODO
+1. Le create profile doit créer un user keycloak
 2. Avoir des endpoints de profile et de compte (create, list, get one, delete)
 3. Github Action : build test
 4. Front
