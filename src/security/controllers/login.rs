@@ -6,7 +6,7 @@ use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
 use chrono::Duration;
 use log::{error, info};
-use openid::{Options, Token};
+use openid::{Options, StandardClaims, Token, TokenIntrospection};
 
 #[get("/login")]
 async fn login(
