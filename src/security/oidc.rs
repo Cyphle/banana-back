@@ -8,23 +8,25 @@ pub struct OidcConfig {
     pub redirect_uri: String,
     pub nonce: Option<String>,
     pub max_age: Option<Duration>,
+    pub logout_uri: String,
 }
 
 impl Clone for OidcConfig {
     fn clone(&self) -> Self {
-        Self { issuer_url: self.issuer_url.clone(), client_id: self.client_id.clone(), client_secret: self.client_secret.clone(), redirect_uri: self.redirect_uri.clone(), nonce: self.nonce.clone(), max_age: self.max_age.clone() }
+        Self { issuer_url: self.issuer_url.clone(), client_id: self.client_id.clone(), client_secret: self.client_secret.clone(), redirect_uri: self.redirect_uri.clone(), nonce: self.nonce.clone(), max_age: self.max_age.clone(), logout_uri: self.logout_uri.clone() }
     }
 }
 
 impl OidcConfig {
-    pub fn new(issuer_url: String, client_id: String, client_secret: String, redirect_uri: String, nonce: Option<String>, max_age: Option<Duration>) -> Self {
+    pub fn new(issuer_url: String, client_id: String, client_secret: String, redirect_uri: String, nonce: Option<String>, max_age: Option<Duration>, logout_uri: String) -> Self {
         OidcConfig { 
             issuer_url, 
             client_id, 
             client_secret, 
             redirect_uri,
             nonce,
-            max_age
+            max_age,
+            logout_uri
         }
     }
 }

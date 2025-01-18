@@ -92,6 +92,7 @@ pub async fn config() -> std::io::Result<()> {
             .service(get_from_store)
             .service(get_session)
             .service(login)
+            .service(logout)
     })
     .bind("127.0.0.1:8080")?
     .run()

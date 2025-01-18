@@ -9,7 +9,8 @@ pub fn get_oidc_config() -> OidcConfig {
         "banana-secret".to_string(),
         "http://localhost:9000/login".to_string(),
         Some("nonce".to_string()),
-        Some(Duration::minutes(10))
+        Some(Duration::minutes(10)),
+        "http://localhost:9000".to_string(),
     )
 }
 

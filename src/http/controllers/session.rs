@@ -26,17 +26,17 @@ async fn get_session(
 
                 // LOGOUT TEST
                 // URL to redirect the user after logout
-                let post_logout_redirect_uri = "http://localhost:9000";
-
-                // Generate the logout URL
-                match logout(&client, &user_id.clone().id_token.unwrap(), post_logout_redirect_uri).await {
-                    Ok(logout_url) => {
-                        info!("Logout URL: {}", logout_url);
-                    }
-                    Err(e) => {
-                        error!("Error generating logout URL: {}", e);
-                    }
-                }
+                // let post_logout_redirect_uri = "http://localhost:9000";
+                //
+                // // Generate the logout URL
+                // match logout(&client, &user_id.clone().id_token.unwrap(), post_logout_redirect_uri).await {
+                //     Ok(logout_url) => {
+                //         info!("Logout URL: {}", logout_url);
+                //     }
+                //     Err(e) => {
+                //         error!("Error generating logout URL: {}", e);
+                //     }
+                // }
 
                 // END LOGOUT TEST
 
