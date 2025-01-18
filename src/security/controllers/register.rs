@@ -7,6 +7,7 @@ use openid::{Client, Discovered, StandardClaims};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use crate::security::token::get_admin_access_token;
 
 #[derive(Serialize)]
 struct NewUser {
@@ -24,13 +25,7 @@ struct Credential {
     temporary: bool,
 }
 
-// Structure for the token response
-#[derive(Deserialize)]
-struct TokenResponse {
-    access_token: String,
-    token_type: String,
-    expires_in: u64,
-}
+
 
 // TODO
 /*
@@ -49,7 +44,7 @@ pub async fn register(
 ) -> impl Responder {
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
 
-    let admin_token = get_access_token(&client).await.unwrap();
+    let admin_token = get_admin_access_token(&client, &state.oidc_config.admin).await.unwrap();
 
     println!("Admin token: {}", admin_token);
 
@@ -61,21 +56,14 @@ pub async fn register(
         credentials: vec![Credential {
             r#type: "password".to_string(),
             value: "SecureP@ssw0rd!".to_string(),
-            temporary: false, // Set to true if the user must change the password on first login
+            temporary: false,
         }],
     };
 
-    let api_url = format!(
-        "http://localhost:8181/admin/realms/{}/users", // Replace with your IdP's API
-        "Banana"
-    );
-
-    let http_client = HttpClient::new();
-
-    let response = http_client
-        .post(&api_url)
-        .bearer_auth(admin_token) // Use the admin token for authorization
-        .json(&new_user)          // Serialize the user data into JSON
+    let response = HttpClient::new()
+        .post(&state.oidc_config.admin.create_user_url)
+        .bearer_auth(admin_token)
+        .json(&new_user)
         .send()
         .await;
 
@@ -89,25 +77,4 @@ pub async fn register(
     }
 
     HttpResponse::Created().finish()
-}
-
-// Function to fetch an access token using the client credentials flow
-async fn get_access_token(client: &Client<Discovered, StandardClaims>) -> Result<String, Box<dyn Error>> {
-    let token_endpoint = client
-        .config()
-        .token_endpoint
-        .clone();
-
-    let http_client = HttpClient::new();
-
-    let response = http_client
-        .post(token_endpoint)
-        .basic_auth(client.client_id.clone(), client.client_secret.clone())
-        .form(&[("grant_type", "client_credentials")])
-        .send()
-        .await?
-        .json::<TokenResponse>()
-        .await?;
-
-    Ok(response.access_token)
 }

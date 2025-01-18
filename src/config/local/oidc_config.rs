@@ -1,6 +1,6 @@
 use chrono::Duration;
 
-use crate::security::oidc::OidcConfig;
+use crate::security::oidc::{OidcAdminConfig, OidcConfig};
 
 pub fn get_oidc_config() -> OidcConfig {
     return OidcConfig::new(
@@ -11,6 +11,11 @@ pub fn get_oidc_config() -> OidcConfig {
         Some("nonce".to_string()),
         Some(Duration::minutes(10)),
         "http://localhost:9000".to_string(),
+        OidcAdminConfig {
+            client_id: "banana-admin".to_string(),
+            client_secret: "5YMRPEgEmwq6G819T98F4dMhb1vMx7AR".to_string(),
+            create_user_url: "http://localhost:8181/admin/realms/Banana/users".to_string(),
+        }
     )
 }
 
