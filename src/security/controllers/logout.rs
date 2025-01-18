@@ -1,7 +1,7 @@
 use actix_session::Session;
 use actix_web::{get, web, HttpResponse, Responder};
 use actix_web::web::Data;
-use log::{error, info};
+use log::{debug, error, info};
 use openid::{Bearer, Client, Discovered, StandardClaims};
 use url::Url;
 use crate::AuthRequest;
@@ -18,27 +18,31 @@ async fn logout(
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
     let logout_uri: &str = state.oidc_config.logout_uri.as_ref();
 
+    // TODO y a un truc qui wait pas dans cette pyramide de ouf. A corriger. Mais sinon ça logout bien
     match user_session {
         Ok(bearer_opt) => match bearer_opt {
             Some(bearer) => {
                 match build_logout_url(&client, &bearer.clone().id_token.unwrap(), logout_uri).await {
                     Ok(logout_url) => {
-                        info!("Logout URL: {}", logout_url);
-
                         match reqwest::get(logout_url).await {
                             Ok(response) => {
                                 // Print the response body as text
                                 let body = response.text().await;
 
                                 match body {
-                                    Ok(body) => println!("Response: {}", body),
-                                    Err(e) => error!("Error reading response body: {}", e),
-                                }
+                                    Ok(body) => {
+                                        info!("Logout response: {}", body);
+                                        session.remove(USER_SESSION_KEY);
 
-                                // TODO and delete session
-                                HttpResponse::NoContent()
-                                    .append_header(("Location ", client.redirect_url()))
-                                    .finish()
+                                        HttpResponse::Ok()
+                                            .append_header(("Location ", client.redirect_url()))
+                                            .body("Logged out")
+                                    },
+                                    Err(e) => {
+                                        error!("Error reading response body: {}", e);
+                                        HttpResponse::InternalServerError().body(format!("Error deleting session from IPD: {}", e))
+                                    }
+                                }
                             }
                             Err(e) => {
                                 error!("Error generating logout URL: {}", e);

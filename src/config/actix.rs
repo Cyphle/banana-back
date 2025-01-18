@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::{collections::HashMap, sync::Mutex};
 
 use crate::http::controllers::actix_store::{add_to_store, get_from_store};
-use crate::http::controllers::session::get_session;
+use crate::http::controllers::session::{delete_session, get_session};
 use crate::security::controllers::login::login;
 use crate::security::oidc::OidcConfig;
 use crate::{
@@ -91,6 +91,7 @@ pub async fn config() -> std::io::Result<()> {
             .service(add_to_store)
             .service(get_from_store)
             .service(get_session)
+            .service(delete_session)
             .service(login)
             .service(logout)
     })

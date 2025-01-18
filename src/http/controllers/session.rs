@@ -65,3 +65,16 @@ async fn get_session(
         }
     }
 }
+#[get("/delete-from-session")]
+async fn delete_session(
+    session: Session,
+    state: web::Data<AppState>,
+    _: web::Query<AuthRequest>,
+) -> impl Responder {
+    let before = session.get::<Bearer>(USER_SESSION_KEY);
+    info!("session before delete: {:?}", before);
+    session.remove(USER_SESSION_KEY);
+    let user_id = session.get::<Bearer>(USER_SESSION_KEY);
+    info!("session after delete: {:?}", user_id);
+    HttpResponse::Ok().body("Session deleted")
+}
