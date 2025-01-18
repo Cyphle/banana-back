@@ -13,7 +13,7 @@ use crate::{
             session_config::get_session_config,
         },
     },
-    http::controllers::profile::{create_profile, get_profile_by_id},
+    http::controllers::profile::get_profile,
     security::oidc::get_client,
 };
 use actix_cors::Cors;
@@ -87,15 +87,16 @@ pub async fn config() -> std::io::Result<()> {
                     .build(),
             )
             .app_data(state.clone())
-            .service(get_profile_by_id)
-            .service(create_profile)
+            // Tests and examples endpoints
             .service(add_to_store)
             .service(get_from_store)
             .service(get_session)
             .service(delete_session)
+            // End tests and examples
             .service(login)
             .service(logout)
             .service(register)
+            .service(get_profile)
     })
     .bind("127.0.0.1:8080")?
     .run()

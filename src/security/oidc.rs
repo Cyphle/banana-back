@@ -37,6 +37,7 @@ impl Clone for OidcAdminConfig {
         Self {
             client_id: self.client_id.clone(),
             client_secret: self.client_secret.clone(),
+            create_user_url: self.create_user_url.clone()
         }
     }
 }
