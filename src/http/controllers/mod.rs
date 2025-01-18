@@ -1,3 +1,3 @@
 pub mod profile;
-pub mod actix_store;
-pub mod actix_session;
+pub mod example_actix_store;
+pub mod example_actix_session;
