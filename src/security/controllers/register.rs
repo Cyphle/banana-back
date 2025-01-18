@@ -1,80 +1,84 @@
 use crate::config::actix::AppState;
-use crate::AuthRequest;
+use crate::{repositories, AuthRequest};
 use actix_session::Session;
 use actix_web::web::Data;
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use openid::{Client, Discovered, StandardClaims};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use log::{error, info};
+use crate::domain::profile::CreateProfileCommand;
+use crate::dto::requests::profile::CreateProfileRequest;
 use crate::security::token::get_admin_access_token;
 
 #[derive(Serialize)]
-struct NewUser {
+struct KeycloakUser {
     username: String,
     email: String,
     enabled: bool,
-    credentials: Vec<Credential>,
+    credentials: Vec<KeycloakCredential>,
 }
 
-// Structure for the credentials (password)
 #[derive(Serialize)]
-struct Credential {
+struct KeycloakCredential {
     r#type: String,
     value: String,
     temporary: bool,
 }
 
-
-
-// TODO
-/*
-    J'utilise les mêmes client id et client secret que l'app cliente. C'est pas bon il faut un autre dédié admin
-    A noter, qu'il faut set:
-    - "service accounts roles" on dans settings du client
-    - que ce soit un client confidential
-    - client authentication on dans settings
-    - dans les rôles, il faut ajouter "manage-users" pour le client
- */
-#[get("/register")]
+#[post("/register")]
 pub async fn register(
-    session: Session,
+    payload: web::Json<CreateProfileRequest>,
+    _: Session,
     state: Data<AppState>,
-    query: web::Query<AuthRequest>,
+    _: web::Query<AuthRequest>,
 ) -> impl Responder {
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
-
     let admin_token = get_admin_access_token(&client, &state.oidc_config.admin).await.unwrap();
 
-    println!("Admin token: {}", admin_token);
+    let moved_payload = payload.into_inner();
 
-    // Define the new user
-    let new_user = NewUser {
-        username: "new_user".to_string(),
-        email: "new_user@example.com".to_string(),
-        enabled: true,
-        credentials: vec![Credential {
-            r#type: "password".to_string(),
-            value: "SecureP@ssw0rd!".to_string(),
-            temporary: false,
-        }],
-    };
+    match repositories::profile::create(
+        &state.db_connection,
+        &CreateProfileCommand {
+            username: moved_payload.username.to_owned(),
+            email: moved_payload.email.to_owned(),
+            first_name: moved_payload.first_name.to_owned(),
+            last_name: moved_payload.last_name.to_owned(),
+        },
+    ).await {
+        Ok(profile) => {
+            let new_user = KeycloakUser {
+                username: profile.username.clone(),
+                email: profile.email.clone(),
+                enabled: true,
+                credentials: vec![KeycloakCredential {
+                    r#type: "password".to_string(),
+                    value: "Bonjour".to_string(),
+                    temporary: false,
+                }],
+            };
 
-    let response = HttpClient::new()
-        .post(&state.oidc_config.admin.create_user_url)
-        .bearer_auth(admin_token)
-        .json(&new_user)
-        .send()
-        .await;
-
-    match response {
-        Ok(response) => {
-            println!("User created successfully {:?}", response);
-        }
+            match HttpClient::new()
+                .post(&state.oidc_config.admin.create_user_url)
+                .bearer_auth(admin_token)
+                .json(&new_user)
+                .send()
+                .await {
+                Ok(response) => {
+                    info!("User created in keycloak: {:?}", response);
+                    HttpResponse::Created().finish()
+                }
+                Err(e) => {
+                    println!("Error creating user in keycloak: {:?}", e);
+                    HttpResponse::InternalServerError().finish()
+                }
+            }
+        },
         Err(e) => {
-            println!("Error creating user: {:?}", e);
-        }
+            error!("Error creating user: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        },
     }
-
-    HttpResponse::Created().finish()
 }
