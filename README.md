@@ -53,10 +53,12 @@ config::actix::config(static_db).await;
 
 ### TODO
 2. Avoir des endpoints de profile et de compte (create, list, get one, delete)
-3. Github Action : build test
-4. Front
+- Il faut aussi refiare un peu de front avec un parcours un peu mieux
+3. Front
+4. Github Action : build test
 5. Docker + Descripteurs kube et deploy sur minikube
 6. EKS + Terraform ou ECS + Terraform
-7. Helm
-8. Logs avec cloudwatch
-9. Monitoring avec opentelemetry genre prometheus
+7. Deploy sur AWS
+8. Helm
+9. Logs avec cloudwatch
+10. Monitoring avec opentelemetry genre prometheus
