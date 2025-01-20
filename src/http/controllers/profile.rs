@@ -1,6 +1,5 @@
 use crate::config::actix::AppState;
 use crate::domain::profile::CreateProfileCommand;
-use crate::dto::requests::profile::CreateProfileRequest;
 use crate::http::adapters::profile::get_profile_by_username;
 use crate::repositories;
 use crate::security::token::get_username_from_session;
@@ -24,7 +23,7 @@ async fn get_profile(session: Session, state: web::Data<AppState>) -> impl Respo
         }
         None => {
             error!("No username info found in session");
-            HttpResponse::InternalServerError().finish()
+            HttpResponse::Ok().finish()
         }
     }
 }

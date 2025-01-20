@@ -1,6 +1,5 @@
 use crate::config::actix::AppState;
 use crate::domain::profile::CreateProfileCommand;
-use crate::dto::requests::profile::CreateProfileRequest;
 use crate::security::token::get_admin_access_token;
 use crate::{repositories, AuthRequest};
 use actix_session::Session;
@@ -27,9 +26,18 @@ struct KeycloakCredential {
     temporary: bool,
 }
 
+#[derive(serde::Deserialize)]
+pub struct RegisterRequest {
+    pub username: String,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub password: String,
+}
+
 #[post("/register")]
 pub async fn register(
-    payload: web::Json<CreateProfileRequest>,
+    payload: web::Json<RegisterRequest>,
     _: Session,
     state: Data<AppState>,
     _: web::Query<AuthRequest>,
@@ -57,7 +65,7 @@ pub async fn register(
                         enabled: true,
                         credentials: vec![KeycloakCredential {
                             r#type: "password".to_string(),
-                            value: "Bonjour".to_string(),
+                            value: request_payload.password.to_owned().to_string(),
                             temporary: false,
                         }],
                     };
@@ -136,7 +144,7 @@ mod tests {
         ).await;
 
         let req = test::TestRequest::post()
-            .set_payload("{\"username\": \"johndoe\", \"email\": \"johndoe@banana.fr\", \"first_name\": \"John\", \"last_name\": \"Doe\"}")
+            .set_payload("{\"username\": \"johndoe\", \"email\": \"johndoe@banana.fr\", \"first_name\": \"John\", \"last_name\": \"Doe\", \"password\": \"Bonjour01\"}")
             .insert_header(ContentType::json())
             .uri("/register").to_request();
 

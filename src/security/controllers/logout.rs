@@ -18,7 +18,6 @@ async fn logout(
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
     let logout_uri: &str = state.oidc_config.logout_uri.as_ref();
 
-    // TODO y a un truc qui wait pas dans cette pyramide de ouf. A corriger. Mais sinon ça logout bien
     match user_session {
         Ok(bearer_opt) => match bearer_opt {
             Some(bearer) => {
@@ -26,7 +25,6 @@ async fn logout(
                     Ok(logout_url) => {
                         match reqwest::get(logout_url).await {
                             Ok(response) => {
-                                // Print the response body as text
                                 let body = response.text().await;
 
                                 match body {
@@ -34,38 +32,34 @@ async fn logout(
                                         info!("Logout response: {}", body);
                                         session.remove(USER_SESSION_KEY);
 
-                                        HttpResponse::Ok()
-                                            .append_header(("Location ", client.redirect_url()))
-                                            .body("Logged out")
                                     },
                                     Err(e) => {
                                         error!("Error reading response body: {}", e);
-                                        HttpResponse::InternalServerError().body(format!("Error deleting session from IPD: {}", e))
                                     }
                                 }
                             }
                             Err(e) => {
                                 error!("Error generating logout URL: {}", e);
-                                HttpResponse::InternalServerError().body(format!("Error generating logout URL: {}", e))
                             }
                         }
                     }
                     Err(e) => {
                         error!("Error generating logout URL: {}", e);
-                        HttpResponse::InternalServerError().body(format!("Error generating logout URL: {}", e))
                     }
                 }
             }
             None => {
                 error!("No session data found");
-                HttpResponse::Ok().body("No session data found")
             }
         },
         Err(e) => {
             error!("No session data found: {}", e);
-            HttpResponse::Ok().body(format!("No session data found: {}", e))
         }
     }
+
+    HttpResponse::Ok()
+        .append_header(("Location ", client.redirect_url()))
+        .body("Logged out")
 }
 
 pub async fn build_logout_url(
