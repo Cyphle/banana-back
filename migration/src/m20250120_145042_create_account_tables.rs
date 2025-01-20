@@ -14,13 +14,13 @@ impl MigrationTrait for Migration {
                 id              SERIAL,
                 name            VARCHAR(255) NOT NULL,
                 type            VARCHAR(255) NOT NULL,
-                user_id         INTEGER NOT NULL,
-                starting_amount NUMERIC(20, 2)
+                profile_id      INTEGER NOT NULL,
+                starting_amount NUMERIC(20, 2),
                 created_at      timestamptz NOT NULL DEFAULT now(),
                 updated_at      timestamptz NOT NULL DEFAULT now(),
                 deleted_at      timestamptz,
                 PRIMARY KEY (id),
-                CONSTRAINT fk_accounts_users FOREIGN KEY (user_id) REFERENCES users (id)
+                CONSTRAINT fk_accounts_profiles FOREIGN KEY (profile_id) REFERENCES profiles (id)
                 ON DELETE CASCADE
                 ON UPDATE CASCADE
             )"

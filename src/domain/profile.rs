@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub struct Profile {
-    id: i32,
+    pub id: i32,
     pub username: String,
     pub email: String,
     first_name: String,
