@@ -7,13 +7,15 @@ pub struct Profile {
     last_name: String,
 }
 
-pub fn new_profile(id: i32, username: String, email: String, first_name: String, last_name: String) -> Profile {
-    Profile {
-        id,
-        username,
-        email,
-        first_name,
-        last_name
+impl Profile {
+    pub fn new(id: i32, username: String, email: String, first_name: String, last_name: String) -> Profile {
+        Profile {
+            id,
+            username,
+            email,
+            first_name,
+            last_name
+        }
     }
 }
 

@@ -14,7 +14,7 @@ pub async fn create(db_connexion: &DatabaseConnection, command: &CreateProfileCo
         ..Default::default()
     };
 
-    model.clone().insert(db_connexion).await.map(|m| domain::profile::new_profile(
+    model.clone().insert(db_connexion).await.map(|m| Profile::new(
         m.id,
         m.username,
         m.email,
@@ -160,7 +160,7 @@ mod tests {
 
     mod create {
         use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
-        use crate::domain::profile::{new_profile, CreateProfileCommand, Profile};
+        use crate::domain::profile::{CreateProfileCommand, Profile};
         use crate::repositories::profile::create;
         use sea_orm::{
             entity::prelude::*, entity::*,
@@ -203,7 +203,7 @@ mod tests {
 
             assert_eq!(
                 created.unwrap(),
-                new_profile(
+                Profile::new(
                     1,
                     "johndoe".to_owned(),
                     "johndoe@banana.fr".to_owned(),

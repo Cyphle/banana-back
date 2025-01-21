@@ -104,8 +104,8 @@ mod tests {
                 [
                     Transaction::from_sql_and_values(
                         DatabaseBackend::Postgres,
-                        r#"SELECT "profiles"."id", "profiles"."username", "profiles"."email", "profiles"."first_name", "profiles"."last_name", "profiles"."created_at", "profiles"."updated_at", "profiles"."deleted_at" FROM "profiles" WHERE "profiles"."username" = $1 LIMIT $2"#,
-                        ["johndoe".into(), 1u64.into()],
+                        r#"SELECT "accounts"."id", "accounts"."name", "accounts"."type", "accounts"."profile_id", "accounts"."starting_amount", "accounts"."created_at", "accounts"."updated_at", "accounts"."deleted_at" FROM "accounts" WHERE "accounts"."id" = $1 AND "accounts"."profile_id" = $2 LIMIT $3"#,
+                        [1.into(), 1.into(), 1u64.into()],
                     ),
                 ]
             );
@@ -158,8 +158,8 @@ mod tests {
                 [
                     Transaction::from_sql_and_values(
                         DatabaseBackend::Postgres,
-                        r#"SELECT "profiles"."id", "profiles"."username", "profiles"."email", "profiles"."first_name", "profiles"."last_name", "profiles"."created_at", "profiles"."updated_at", "profiles"."deleted_at" FROM "profiles" WHERE "profiles"."username" = $1 LIMIT $2"#,
-                        ["johndoe".into(), 1u64.into()],
+                        r#"SELECT "accounts"."id", "accounts"."name", "accounts"."type", "accounts"."profile_id", "accounts"."starting_amount", "accounts"."created_at", "accounts"."updated_at", "accounts"."deleted_at" FROM "accounts" WHERE "accounts"."profile_id" = $1"#,
+                        [1.into()],
                     ),
                 ]
             );
@@ -173,11 +173,20 @@ mod tests {
         use sea_orm::prelude::*;
         use rust_decimal::Decimal as rDecimal;
         use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
+        use rust_decimal::prelude::FromPrimitive;
+        use crate::domain::profile::Profile;
 
         #[tokio::test]
         async fn should_create_account() -> Result<(), DbErr> {
             let d = NaiveDate::from_ymd_opt(2015, 6, 3).unwrap();
             let t = NaiveTime::from_hms_milli_opt(12, 34, 56, 789).unwrap();
+            let profile = Profile::new(
+                1,
+                "johndoe".to_owned(),
+                "johndoe@banana.fr".to_owned(),
+                "John".to_owned(),
+                "Doe".to_owned(),
+            );
 
             let db = MockDatabase::new(DatabaseBackend::Postgres)
                 .append_query_results([
@@ -203,7 +212,7 @@ mod tests {
             let command = CreateAccountCommand {
                 name: "Test Account".to_owned(),
                 r#type: "Savings".to_owned(),
-                profile_id: 1,
+                profile: profile,
                 starting_amount: 10.0,
             };
 
