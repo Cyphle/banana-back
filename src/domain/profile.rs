@@ -3,8 +3,8 @@ pub struct Profile {
     pub id: i32,
     pub username: String,
     pub email: String,
-    first_name: String,
-    last_name: String,
+    pub first_name: String,
+    pub last_name: String,
 }
 
 impl Profile {

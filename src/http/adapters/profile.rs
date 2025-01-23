@@ -1,9 +1,10 @@
 use crate::dto::views::profile::ProfileView;
-use crate::repositories::profile::find_one_by_username;
+use crate::repositories::profile::{find_one_by_username};
 use sea_orm::DatabaseConnection;
+use crate::repositories::profile::mappers::to_profile_view;
 
 pub async fn get_profile_by_username(db_connexion: &DatabaseConnection, username: &str) -> Option<ProfileView> {
-    find_one_by_username(db_connexion, username).await.unwrap_or_else(|_| None)
+    find_one_by_username(db_connexion, username, to_profile_view).await.unwrap_or_else(|_| None)
 }
 
 #[cfg(test)]

@@ -1,9 +1,10 @@
-use crate::domain;
 use crate::domain::profile::{CreateProfileCommand, Profile};
+use crate::dto::views::profile::ProfileView;
+use crate::security::token::get_username_from_session;
+use entity::profiles::Entity as ProfileEntity;
+use openid::DiscoveredClient;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
-use crate::dto::views::profile::ProfileView;
-use entity::profiles::Entity as ProfileEntity;
 
 pub async fn create(db_connexion: &DatabaseConnection, command: &CreateProfileCommand) -> Result<Profile, DbErr> {
     let model = entity::profiles::ActiveModel {
@@ -36,29 +37,71 @@ pub async fn find_one_by_id(db_connexion: &DatabaseConnection, id: i32) -> Resul
         }))
 }
 
-pub async fn find_one_by_username(db_connexion: &DatabaseConnection, username: &str) -> Result<Option<ProfileView>, DbErr> {
-     ProfileEntity::find()
+pub async fn find_one_by_username<F, R>(
+    db_connexion: &DatabaseConnection,
+    username: &str,
+    mapper: F
+) -> Result<Option<R>, DbErr>
+where F: Fn(entity::profiles::Model) -> R
+{
+    ProfileEntity::find()
         .filter(entity::profiles::Column::Username.eq(format!("{}", username).as_str()))
         .one(db_connexion)
         .await
-        .map(|m| m.map(|m| ProfileView {
-            id: m.id,
-            username: m.username,
-            email: m.email,
-            first_name: m.first_name,
-            last_name: m.last_name,
-        }))
+        .map(|m| m.map(|m| mapper(m)))
+}
+
+pub async fn find_one_from_session<F, R>(
+    client: &DiscoveredClient,
+    db_connexion: &DatabaseConnection,
+    session: &actix_session::Session,
+    mapper: F
+) -> Result<Option<R>, DbErr>
+where F: Fn(entity::profiles::Model) -> R
+{
+    let username = get_username_from_session(client, session).await;
+    match username {
+        Some(username) => find_one_by_username(db_connexion, &username, mapper).await,
+        None => Ok(None)
+    }
+}
+
+pub mod mappers {
+    use crate::domain::profile::Profile;
+    use crate::dto::views::profile::ProfileView;
+
+    pub fn to_profile_view(model: entity::profiles::Model) -> ProfileView {
+        ProfileView {
+            id: model.id,
+            username: model.username,
+            email: model.email,
+            first_name: model.first_name,
+            last_name: model.last_name,
+        }
+    }
+
+    pub fn to_profile(model: entity::profiles::Model) -> Profile {
+        Profile::new(
+            model.id,
+            model.username,
+            model.email,
+            model.first_name,
+            model.last_name
+        )
+    }
 }
 
 #[cfg(test)]
 mod tests {
     mod read {
+        use crate::domain::profile::Profile;
+        use crate::dto::views::profile::ProfileView;
+        use crate::repositories::profile::mappers::{to_profile, to_profile_view};
+        use crate::repositories::profile::{find_one_by_id, find_one_by_username};
         use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
+        use sea_orm::prelude::DateTimeWithTimeZone;
         use sea_orm::EntityTrait;
         use sea_orm::{DatabaseBackend, DbErr, MockDatabase, Transaction};
-        use sea_orm::prelude::DateTimeWithTimeZone;
-        use crate::dto::views::profile::ProfileView;
-        use crate::repositories::profile::{find_one_by_id, find_one_by_username};
 
         #[async_std::test]
         async fn should_find_one_by_id() -> Result<(), DbErr> {
@@ -109,7 +152,7 @@ mod tests {
         }
 
         #[async_std::test]
-        async fn should_find_one_by_username() -> Result<(), DbErr> {
+        async fn should_find_one_by_username_with_profile_mapper() -> Result<(), DbErr> {
             let d = NaiveDate::from_ymd_opt(2015, 6, 3).unwrap();
             let t = NaiveTime::from_hms_milli_opt(12, 34, 56, 789).unwrap();
 
@@ -128,7 +171,56 @@ mod tests {
                 ])
                 .into_connection();
 
-            let found = find_one_by_username(&db, "johndoe").await?;
+            let found = find_one_by_username(&db, "johndoe", to_profile).await?;
+
+
+            assert_eq!(
+                found,
+                Some(Profile {
+                    id: 1,
+                    username: "johndoe".to_owned(),
+                    email: "johndoe@banana.fr".to_owned(),
+                    first_name: "John".to_owned(),
+                    last_name: "Doe".to_owned(),
+                })
+            );
+
+            // Checking transaction log
+            assert_eq!(
+                db.into_transaction_log(),
+                [
+                    Transaction::from_sql_and_values(
+                        DatabaseBackend::Postgres,
+                        r#"SELECT "profiles"."id", "profiles"."username", "profiles"."email", "profiles"."first_name", "profiles"."last_name", "profiles"."created_at", "profiles"."updated_at", "profiles"."deleted_at" FROM "profiles" WHERE "profiles"."username" = $1 LIMIT $2"#,
+                        ["johndoe".into(), 1u64.into()],
+                    ),
+                ]
+            );
+
+            Ok(())
+        }
+
+        #[async_std::test]
+        async fn should_find_one_by_username_with_profile_view_mapper() -> Result<(), DbErr> {
+            let d = NaiveDate::from_ymd_opt(2015, 6, 3).unwrap();
+            let t = NaiveTime::from_hms_milli_opt(12, 34, 56, 789).unwrap();
+
+            let db = MockDatabase::new(DatabaseBackend::Postgres)
+                .append_query_results([
+                    vec![entity::profiles::Model {
+                        id: 1,
+                        username: "johndoe".to_owned(),
+                        email: "johndoe@banana.fr".to_owned(),
+                        first_name: "John".to_owned(),
+                        last_name: "Doe".to_owned(),
+                        created_at: DateTimeWithTimeZone::from_naive_utc_and_offset(NaiveDateTime::new(d, t), FixedOffset::east_opt(0).unwrap()),
+                        updated_at: DateTimeWithTimeZone::from_naive_utc_and_offset(NaiveDateTime::new(d, t), FixedOffset::east_opt(0).unwrap()),
+                        deleted_at: None,
+                    }],
+                ])
+                .into_connection();
+
+            let found = find_one_by_username(&db, "johndoe", to_profile_view).await?;
 
 
             assert_eq!(
@@ -159,9 +251,9 @@ mod tests {
     }
 
     mod create {
-        use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
         use crate::domain::profile::{CreateProfileCommand, Profile};
         use crate::repositories::profile::create;
+        use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
         use sea_orm::{
             entity::prelude::*, entity::*,
             DatabaseBackend, MockDatabase, MockExecResult, Transaction,
