@@ -14,5 +14,5 @@ pub struct CreateAccountCommand {
     pub name: String,
     pub r#type: String,
     pub starting_amount: f64,
-    pub profile: Profile
+    pub profile_id: i32
 }

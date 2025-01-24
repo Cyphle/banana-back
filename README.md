@@ -62,3 +62,4 @@ config::actix::config(static_db).await;
 8. Helm
 9. Logs avec cloudwatch
 10. Monitoring avec opentelemetry genre prometheus
+11. Pour tester plus facilement, il faudrait passer en objet et injecter les dépendances genre initialiser les repositories et les mettre dans le state actix et apres un peu mock avec trait tout ça

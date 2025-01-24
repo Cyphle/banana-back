@@ -7,13 +7,13 @@ use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 
 pub async fn create(
     db_connexion: &DatabaseConnection,
-    command: CreateAccountCommand,
+    command: &CreateAccountCommand,
 ) -> Result<Account, DbErr> {
     let amount: Option<Decimal> = rDecimal::from_f64(command.starting_amount);
     let model = entity::accounts::ActiveModel {
         name: Set(command.name.to_owned()),
         r#type: Set(command.r#type.to_owned()),
-        profile_id: Set(command.profile.id),
+        profile_id: Set(command.profile_id),
         starting_amount: Set(amount),
         ..Default::default()
     };
