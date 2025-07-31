@@ -1,0 +1,54 @@
+{
+  "name": "fastify-ts",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "server:run": "cd dist && nodemon index.js",
+    "server:build": "tsc -p tsconfig.json",
+    "server": "npm run server:build && npm run server:run",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@fastify/secure-session": "^8.2.0",
+    "convict": "^6.2.4",
+    "fastify": "^5.4.0",
+    "openid-client": "^6.6.2"
+  },
+  "devDependencies": {
+    "@types/convict": "^6.1.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "jest": "^30.0.5",
+    "nodemon": "^3.1.10",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "testTimeout": 30000,
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
