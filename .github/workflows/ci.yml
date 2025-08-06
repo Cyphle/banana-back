@@ -2,11 +2,6 @@ name: Deploy Banana Back
 
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Image tag to build and push'
-        required: false
-        default: 'latest'
 
 env:
   REGISTRY_URL: rg.fr-par.scw.cloud
@@ -32,12 +27,14 @@ jobs:
 #        run: npm test
 
       - name: Login to Scaleway Container Registry
-        run: echo "${{ secrets.SCW_SECRET_KEY }}" | docker login ${{ env.REGISTRY_URL }} -u "${{ secrets.SCW_ACCESS_KEY }}" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+          registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t $REGISTRY_URL/$IMAGE_NAME:${{ github.sha }} .
+      - name: Build the Docker image
+        run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/$IMAGE_NAME:${{ github.sha }}
 
-      - name: Push Docker image
-        run: |
-          docker push $REGISTRY_URL/$IMAGE_NAME:${{ github.sha }}
+      - name: Push the Docker Image
+        run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/$IMAGE_NAME:${{ github.sha }}
