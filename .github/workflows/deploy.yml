@@ -1,0 +1,47 @@
+name: Deploy Banana Back
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag to build and push'
+        required: false
+        default: 'latest'
+
+env:
+  REGISTRY_URL: rg.fr-par.scw.cloud
+  IMAGE_NAME: banana-back
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: banana-back
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.18.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Login to Scaleway Container Registry
+        run: echo "${{ secrets.SCW_SECRET_KEY }}" | docker login ${{ env.REGISTRY_URL }} -u "${{ secrets.SCW_ACCESS_KEY }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t $REGISTRY_URL/$IMAGE_NAME:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push $REGISTRY_URL/$IMAGE_NAME:latest
