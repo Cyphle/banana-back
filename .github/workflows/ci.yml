@@ -3,13 +3,12 @@ name: Deploy Banana Back
 on:
   workflow_dispatch:
 
-env:
-  REGISTRY_URL: rg.fr-par.scw.cloud
-  IMAGE_NAME: banana-back
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: banana-back
 
     steps:
       - name: Checkout repo
@@ -34,7 +33,7 @@ jobs:
           registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
 
       - name: Build the Docker image
-        run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/$IMAGE_NAME:${{ github.sha }}
+        run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Push the Docker Image
-        run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/$IMAGE_NAME:${{ github.sha }}
+        run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
