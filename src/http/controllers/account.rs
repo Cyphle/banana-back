@@ -38,10 +38,8 @@ pub async fn create_account(
                     HttpResponse::Ok().finish()
                 }
             }
-
-            HttpResponse::Ok().finish()
         }
-        Err(e) => {
+        Err(_e) => {
             HttpResponse::Forbidden().finish()
         }
     }
