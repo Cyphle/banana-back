@@ -47,6 +47,7 @@ pub async fn config() -> std::io::Result<()> {
     info!("Starting Actix server");
 
     // Databse
+    // TODO à priori, chatgpt conseille de faire un clone à envoyer à actix au lieu de faire un pointer box
     let db = connect(&get_database_config()).await.unwrap();
     let static_db = Box::leak(Box::new(db));
 
