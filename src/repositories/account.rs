@@ -212,7 +212,7 @@ mod tests {
             let command = CreateAccountCommand {
                 name: "Test Account".to_owned(),
                 r#type: "Savings".to_owned(),
-                profile: profile,
+                profile_id: profile.id,
                 starting_amount: 10.0,
             };
 

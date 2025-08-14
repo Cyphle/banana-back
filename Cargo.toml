@@ -25,3 +25,4 @@ url = "2.2"
 actix-cors = "0.6"
 actix-session = { version = "0.10.1", features = ["cookie-session", "redis-session"] }
 rust_decimal = { version = "1.30", features = ["serde-float"] }
+config = { version = "0.14", features = ["yaml"] }

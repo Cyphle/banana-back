@@ -1,0 +1,46 @@
+# Configuration par défaut pour Banana Backend
+app:
+  port: 9000
+  host: "0.0.0.0"
+
+database:
+  host: "localhost"
+  port: "5434"
+  schema: "banana"
+  username: "postgres"
+  password: "postgres"
+  max_connections: 100
+  min_connections: 5
+  connect_timeout: 8
+  acquire_timeout: 8
+  idle_timeout: 8
+  max_lifetime: 8
+  sqlx_logging: true
+
+oidc:
+  realm_url: "http://localhost:8181/realms/Banana"
+  realm: "banana"
+  client_secret: "banana-secret"
+  login_url: "http://localhost:9000/login"
+  nonce: "nonce"
+  session_timeout_minutes: 10
+  base_url: "http://localhost:9000"
+  admin:
+    client_id: "banana-admin"
+    client_secret: "5YMRPEgEmwq6G819T98F4dMhb1vMx7AR"
+    create_user_url: "http://localhost:8181/admin/realms/Banana/users"
+
+session:
+  store_addr: "redis://127.0.0.1:6379"
+  cookie_name: "actix_cookie"
+  session_ttl_days: 5
+
+cors:
+  allowed_origin: "http://localhost:9000"
+  allowed_methods: ["GET", "POST"]
+  allowed_headers: ["Content-Type"]
+  supports_credentials: true
+  max_age: 3600
+
+logging:
+  level: "info"

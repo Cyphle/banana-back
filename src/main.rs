@@ -22,6 +22,22 @@ struct AuthRequest {
 async fn main() -> std::io::Result<()> {
     config::logger::config();
 
+    // Test de la nouvelle configuration
+    match config::app_config::AppConfig::new() {
+        Ok(config) => {
+            info!("Configuration chargée avec succès!");
+            info!("Port: {}", config.app.port);
+            info!("Host: {}", config.app.host);
+            info!("Base de données: {}:{}", config.database.host, config.database.port);
+            info!("OIDC Realm: {}", config.oidc.realm);
+            info!("Session cookie: {}", config.session.cookie_name);
+        }
+        Err(e) => {
+            log::error!("Erreur lors du chargement de la configuration: {:?}", e);
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Configuration error"));
+        }
+    }
+
     info!("Starting the application");
     config::actix::config().await
 

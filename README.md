@@ -17,7 +17,7 @@ sea-orm = { version = "1.0.0-rc.5", features = [ <DATABASE_DRIVER>, <ASYNC_RUNTI
 
 #### Commands
 - `sea-orm-cli migrate generate <migration name>`: create a new migration
-- `sea-orm-cli migrate up`: run migration
+- `sea-orm-cli migrate up --databade-url "postgres://postgres:postgres@localhost:5434/banana"`: run migration
 - `sea-orm-cli generate entity -o entity/src`: generate entities
 
 ### Actix
