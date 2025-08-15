@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: banana-postgresql-service
+  labels:
+    app: banana-postgresql
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+    nodePort: 30432
+  selector:
+    app: banana-postgresql
