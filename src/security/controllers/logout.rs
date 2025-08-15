@@ -23,30 +23,15 @@ async fn logout(
             Some(bearer) => {
                 match build_logout_url(&client, &bearer.clone().id_token.unwrap(), logout_uri).await {
                     Ok(logout_url) => {
-                        // TODO cette requête ne supprime pas la session de keycloak
-                        match reqwest::get(logout_url).await {
-                            Ok(response) => {
-                                let body = response.text().await;
-
-                                match body {
-                                    Ok(body) => {
-                                        info!("Logout response: {}", body);
-                                        session.remove(USER_SESSION_KEY);
-                                        // TODO il faut supprimer la session de keycloak aussi
-
-                                    },
-                                    Err(e) => {
-                                        error!("Error reading response body: {}", e);
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                error!("Error generating logout URL: {}", e);
-                            }
-                        }
+                        session.remove(USER_SESSION_KEY);
+                        info!("Redirecting to logout URL: {}", logout_url);
+                        return HttpResponse::Found()
+                            .append_header(("Location", logout_url.to_string()))
+                            .finish();
                     }
                     Err(e) => {
                         error!("Error generating logout URL: {}", e);
+                        session.remove(USER_SESSION_KEY);
                     }
                 }
             }

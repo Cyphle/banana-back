@@ -10,7 +10,7 @@ pub fn get_oidc_config() -> OidcConfig {
         "http://localhost:8080/login".to_string(),
         Some("nonce".to_string()),
         Some(Duration::minutes(10)),
-        "http://localhost:9000".to_string(),
+        "http://localhost:8080/logout".to_string(),
         OidcAdminConfig {
             client_id: "banana-admin".to_string(),
             client_secret: "5YMRPEgEmwq6G819T98F4dMhb1vMx7AR".to_string(),
