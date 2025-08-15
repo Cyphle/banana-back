@@ -6,7 +6,7 @@ use crate::repositories::profile::{find_one_from_session};
 use actix_session::Session;
 use actix_web::web::Data;
 use actix_web::{get, post, web, HttpResponse, Responder};
-use log::error;
+use log::{error, info};
 use crate::dto::views::account::AccountView;
 use crate::repositories;
 use crate::repositories::account::create;
@@ -18,6 +18,8 @@ pub async fn create_account(
     session: Session,
     state: Data<AppState>,
 ) -> impl Responder {
+    info!("Creating account");
+
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
     match find_one_from_session(&client, &state.db_connection, &session, to_profile).await {
         Ok(profile) => {

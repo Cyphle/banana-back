@@ -28,6 +28,7 @@ use openid::{Bearer, Client, Discovered, StandardClaims};
 use sea_orm::DatabaseConnection;
 use crate::http::controllers::account::{create_account, find_all, find_one};
 use crate::http::controllers::technical::health;
+use crate::http::controllers::test::test;
 use crate::security::controllers::logout::logout;
 use crate::security::controllers::register::register;
 
@@ -104,6 +105,8 @@ pub async fn config() -> std::io::Result<()> {
             .service(create_account)
             .service(find_one)
             .service(find_all)
+            .service(test)
+            // Technical
             .service(health)
     })
     .bind("127.0.0.1:8080")?

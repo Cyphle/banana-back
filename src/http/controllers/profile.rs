@@ -9,6 +9,8 @@ use log::{error, info};
 
 #[get("/profiles")]
 async fn get_profile(session: Session, state: web::Data<AppState>) -> impl Responder {
+    info!("Getting profile");
+
     let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
     match get_username_from_session(&client, &session).await {
         Some(username) => {
