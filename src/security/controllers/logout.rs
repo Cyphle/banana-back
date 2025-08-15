@@ -23,6 +23,7 @@ async fn logout(
             Some(bearer) => {
                 match build_logout_url(&client, &bearer.clone().id_token.unwrap(), logout_uri).await {
                     Ok(logout_url) => {
+                        // TODO cette requête ne supprime pas la session de keycloak
                         match reqwest::get(logout_url).await {
                             Ok(response) => {
                                 let body = response.text().await;
@@ -31,6 +32,7 @@ async fn logout(
                                     Ok(body) => {
                                         info!("Logout response: {}", body);
                                         session.remove(USER_SESSION_KEY);
+                                        // TODO il faut supprimer la session de keycloak aussi
 
                                     },
                                     Err(e) => {
@@ -58,7 +60,6 @@ async fn logout(
     }
 
     HttpResponse::Ok()
-        .append_header(("Location ", client.redirect_url()))
         .body("Logged out")
 }
 

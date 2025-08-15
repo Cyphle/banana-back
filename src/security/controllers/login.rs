@@ -7,6 +7,7 @@ use actix_web::{get, web, HttpResponse, Responder};
 use chrono::Duration;
 use log::{error, info};
 use openid::{Options, StandardClaims, Token, TokenIntrospection};
+use openid::error::Error::Http;
 
 #[get("/login")]
 async fn login(
@@ -25,10 +26,15 @@ async fn login(
 
             let nonce: Option<&str> = state.oidc_config.nonce.as_deref();
             let max_age: Option<&Duration> = state.oidc_config.max_age.as_ref();
+            
             match client.authenticate(authorization_code, nonce, max_age).await {
                 Ok(token) => {
                     save_in_session(session, &token);
-                    HttpResponse::Ok().finish()
+
+                    // TODO ici il faut rediriger vers le referer qui a lancé le login
+                    HttpResponse::PermanentRedirect()
+                        .append_header(("Location", "http://localhost:5173/"))
+                        .finish()
                 }
                 Err(err) => {
                     error!("Error exchanging code for token: {:?}", err);

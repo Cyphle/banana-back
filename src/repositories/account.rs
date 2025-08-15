@@ -216,7 +216,7 @@ mod tests {
                 starting_amount: 10.0,
             };
 
-            let created = create(&db, command).await?;
+            let created = create(&db, &command).await?;
 
             assert_eq!(
                 created,

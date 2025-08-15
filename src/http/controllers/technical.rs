@@ -1,6 +1,9 @@
 use actix_web::{get, HttpResponse, Responder};
+use serde_json::json;
 
 #[get("/health")]
 pub async fn health() -> impl Responder {
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(json!({
+        "status": "UP"
+    }))
 }

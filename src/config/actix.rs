@@ -43,6 +43,7 @@ pub struct SessionConfig {
     pub cookie_name: String,
 }
 
+// TODO il faut remplacer ça par l'utilisation de app_conffig.rs
 pub async fn config() -> std::io::Result<()> {
     info!("Starting Actix server");
 
