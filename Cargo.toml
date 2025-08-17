@@ -1,5 +1,5 @@
 [package]
-name = "banana-back-rs"
+name = "banana-back"
 version = "0.1.0"
 edition = "2021"
 
@@ -26,3 +26,10 @@ actix-cors = "0.6"
 actix-session = { version = "0.10.1", features = ["cookie-session", "redis-session"] }
 rust_decimal = { version = "1.30", features = ["serde-float"] }
 config = { version = "0.14", features = ["yaml"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

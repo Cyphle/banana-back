@@ -611,7 +611,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "banana-back-rs"
+name = "banana-back"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
