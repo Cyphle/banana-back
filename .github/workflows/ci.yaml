@@ -30,31 +30,43 @@ jobs:
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache target directory
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-target-musl-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Run tests
         run: cargo test --release
 
       - name: Run Clippy
         run: cargo clippy --release
-        # run: cargo clippy --release -- -D warnings
 
-      - name: Build for Alpine with muslrust container
+      # ✅ SOLUTION ALTERNATIVE : Build avec un conteneur Rust + OpenSSL statique
+      - name: Build for Alpine with custom container
         run: |
-          # Créer le répertoire target s'il n'existe pas
-          mkdir -p target
+          cat << 'EOF' > Dockerfile.build
+          FROM rust:1.75-alpine
           
-          # Build avec cache monté
+          # Installer les dépendances nécessaires
+          RUN apk add --no-cache \
+              musl-dev \
+              openssl-dev \
+              openssl-libs-static \
+              pkgconf \
+              git
+          
+          # Ajouter le target musl
+          RUN rustup target add x86_64-unknown-linux-musl
+          
+          WORKDIR /workspace
+          EOF
+          
+          # Build de l'image de build
+          docker build -f Dockerfile.build -t rust-musl-builder .
+          
+          # Build du projet avec OpenSSL statique
           docker run --rm \
             -v $PWD:/workspace \
-            -v ~/.cargo/registry:/root/.cargo/registry \
-            -v $PWD/target:/workspace/target \
+            -v ~/.cargo/registry:/usr/local/cargo/registry \
             -w /workspace \
-            clux/muslrust:stable \
+            -e OPENSSL_STATIC=1 \
+            -e PKG_CONFIG_ALL_STATIC=1 \
+            rust-musl-builder \
             cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Login to Scaleway Container Registry
