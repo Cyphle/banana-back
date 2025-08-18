@@ -48,10 +48,14 @@ jobs:
               openssl-dev \
               openssl-libs-static \
               pkgconf \
-              git
+              git \
+              gcc
           
           # Ajouter le target musl
           RUN rustup target add x86_64-unknown-linux-musl
+          
+          # Configurer le linker pour musl
+          ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc
           
           WORKDIR /workspace
           EOF
