@@ -34,24 +34,34 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-          musl-tools \
-          musl-dev \
-          pkg-config \
-          libssl-dev \
-          openssl \
-          build-essential
+            musl-tools \
+            musl-dev \
+            pkg-config \
+            libssl-dev \
+            openssl \
+            build-essential \
+            linux-libc-dev \
+            libc6-dev
 
       - name: Install musl OpenSSL
         run: |
-          # Télécharger et compiler OpenSSL pour musl
           wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
           tar xzf openssl-1.1.1w.tar.gz
           cd openssl-1.1.1w
           
-          CC="musl-gcc -fPIE -pie" ./Configure no-shared no-async --prefix=/musl --openssldir=/musl/ssl linux-x86_64
+          # Configuration plus simple sans options problématiques
+          CC="musl-gcc" ./Configure \
+            no-shared \
+            no-async \
+            no-engine \
+            no-dso \
+            --prefix=/musl \
+            --openssldir=/musl/ssl \
+            linux-x86_64
+          
           make depend
           make -j$(nproc)
-          sudo make install
+          sudo make install_sw
           
           cd ..
           rm -rf openssl-1.1.1w*
