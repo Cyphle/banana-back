@@ -36,42 +36,6 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --release
 
-      # ✅ SOLUTION ALTERNATIVE : Build avec un conteneur Rust + OpenSSL statique
-      - name: Build for Alpine with custom container
-        run: |
-          cat << 'EOF' > Dockerfile.build
-          FROM rust:alpine3.22
-          
-          # Installer les dépendances nécessaires
-          RUN apk add --no-cache \
-              musl-dev \
-              openssl-dev \
-              openssl-libs-static \
-              pkgconf \
-              git \
-              gcc
-          
-          # Ajouter le target musl
-          RUN rustup target add x86_64-unknown-linux-musl
-          
-          # Configurer le linker pour musl
-          ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc
-          
-          WORKDIR /workspace
-          EOF
-          
-          # Build de l'image de build
-          docker build -f Dockerfile.build -t rust-musl-builder .
-          
-          # Build du projet avec OpenSSL statique
-          docker run --rm \
-            -v $PWD:/workspace \
-            -v ~/.cargo/registry:/usr/local/cargo/registry \
-            -w /workspace \
-            -e OPENSSL_STATIC=1 \
-            -e PKG_CONFIG_ALL_STATIC=1 \
-            rust-musl-builder \
-            cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Login to Scaleway Container Registry
         uses: docker/login-action@v3
