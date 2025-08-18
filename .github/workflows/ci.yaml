@@ -40,7 +40,7 @@ jobs:
       - name: Build for Alpine with custom container
         run: |
           cat << 'EOF' > Dockerfile.build
-          FROM rust:1.75-alpine
+          FROM rust:alpine3.22
           
           # Installer les dépendances nécessaires
           RUN apk add --no-cache \
