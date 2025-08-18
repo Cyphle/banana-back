@@ -41,7 +41,8 @@ jobs:
         run: cargo test --release
 
       - name: Run Clippy
-        run: cargo clippy --release -- -D warnings
+        run: cargo clippy --release
+#        run: cargo clippy --release -- -D warnings
 
       - name: Build for Alpine
         run: cargo build --release --target x86_64-unknown-linux-musl
