@@ -1,9 +1,11 @@
-use std::sync::Arc;
-use std::{collections::HashMap, sync::Mutex};
-
-use crate::http::controllers::example_actix_store::{add_to_store, get_from_store};
+use crate::http::controllers::account::{create_account, find_all, find_one};
 use crate::http::controllers::example_actix_session::{delete_session, get_session};
+use crate::http::controllers::example_actix_store::{add_to_store, get_from_store};
+use crate::http::controllers::technical::{live, ready};
+use crate::http::controllers::test::test;
 use crate::security::controllers::login::login;
+use crate::security::controllers::logout::logout;
+use crate::security::controllers::register::register;
 use crate::security::oidc::OidcConfig;
 use crate::{
     config::{
@@ -17,8 +19,8 @@ use crate::{
     security::oidc::get_client,
 };
 use actix_cors::Cors;
-use actix_session::{config::PersistentSession, storage::RedisSessionStore, SessionMiddleware};
 use actix_session::storage::CookieSessionStore;
+use actix_session::{config::PersistentSession, storage::RedisSessionStore, SessionMiddleware};
 use actix_web::{
     cookie::{time, Key},
     web, App, HttpServer,
@@ -26,11 +28,9 @@ use actix_web::{
 use log::info;
 use openid::{Bearer, Client, Discovered, StandardClaims};
 use sea_orm::DatabaseConnection;
-use crate::http::controllers::account::{create_account, find_all, find_one};
-use crate::http::controllers::technical::health;
-use crate::http::controllers::test::test;
-use crate::security::controllers::logout::logout;
-use crate::security::controllers::register::register;
+use std::sync::Arc;
+use std::task::ready;
+use std::{collections::HashMap, sync::Mutex};
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
@@ -107,7 +107,8 @@ pub async fn config() -> std::io::Result<()> {
             .service(find_all)
             .service(test)
             // Technical
-            .service(health)
+            .service(live)
+            .service(ready)
     })
     .bind("127.0.0.1:8080")?
     .run()

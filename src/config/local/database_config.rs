@@ -3,7 +3,7 @@ use crate::config::database::DatabaseConfig;
 pub fn get_database_config() -> DatabaseConfig {
     DatabaseConfig {
         host: "localhost",
-        port: "5434",
+        port: "5432",
         schema: "banana",
         username: "postgres",
         password: "postgres",

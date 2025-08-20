@@ -1,0 +1,186 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banana-back
+  labels:
+    app: banana-back
+  namespace: banana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: banana-back
+  template:
+    metadata:
+      labels:
+        app: banana-back
+    spec:
+      containers:
+        - name: banana-back
+          image: rg.fr-par.scw.cloud/banana/banana-back:latest
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            # Database
+            - name: BANANA_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_HOST
+            - name: BANANA_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_PORT
+            - name: BANANA_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_NAME
+            - name: BANANA_DB_MAX_CONNECTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_MAX_CONNECTIONS
+            - name: BANANA_DB_MIN_CONNECTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_MIN_CONNECTIONS
+            - name: BANANA_DB_CONNECT_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_CONNECT_TIMEOUT
+            - name: BANANA_DB_ACQUIRE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_ACQUIRE_TIMEOUT
+            - name: BANANA_DB_IDLE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_IDLE_TIMEOUT
+            - name: BANANA_DB_MAX_LIFETIME
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_MAX_LIFETIME
+            - name: BANANA_DB_SQLX_LOGGING
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_SQLX_LOGGING
+
+            - name: BANANA_POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: POSTGRES_USERNAME
+            - name: BANANA_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: POSTGRES_PASSWORD
+
+            # Redis
+            - name: BANANA_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: REDIS_HOST
+            - name: BANANA_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: REDIS_PORT
+
+            - name: BANANA_REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: REDIS_USERNAME
+            - name: BANANA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: REDIS_PASSWORD
+
+            # OIDC
+            - name: BANANA_OIDC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_URL
+            - name: BANANA_OIDC_REDIRECT_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_REDIRECT_URI
+            - name: BANANA_OIDC_LOGOUT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_LOGOUT_URL
+            - name: BANANA_OIDC_REALM
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_REALM
+
+            - name: BANANA_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: OIDC_CLIENT_ID
+            - name: BANANA_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: OIDC_CLIENT_SECRET
+            - name: BANANA_OIDC_ADMIN_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: OIDC_ADMIN_CLIENT_ID
+            - name: BANANA_OIDC_ADMIN_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: banana-secrets
+                  key: OIDC_ADMIN_CLIENT_SECRET
+
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          resources:
+            requests:
+              memory: "256m"
+              cpu: "256m"
+            limits:
+              memory: "1Gi"
