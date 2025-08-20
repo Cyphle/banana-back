@@ -1,0 +1,35 @@
+name: Deploy Banana Front
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SH1 à déployer'
+        required: true
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_PATH: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/banana/banana-back
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Patch image tag in manifest
+        run: |
+          sed -i "s|${{ env.IMAGE_PATH }}:.*|${{ env.IMAGE_PATH }}:${{ github.event.inputs.version }}|" k8s/banana-back.yaml
+        working-directory: .
+
+      - name: Apply Kubernetes manifest
+        run: |
+          kubectl apply -n banana -f k8s/banana-back.yaml
+          kubectl rollout status deployment/banana-back --namespace banana --timeout=120s
