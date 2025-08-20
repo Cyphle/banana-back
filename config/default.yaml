@@ -27,7 +27,7 @@ oidc:
   base_url: "http://localhost:9000"
   admin:
     client_id: "banana-admin"
-    client_secret: "5YMRPEgEmwq6G819T98F4dMhb1vMx7AR"
+    client_secret: "banana-admin-secret"
     create_user_url: "http://localhost:8181/admin/realms/Banana/users"
 
 session:

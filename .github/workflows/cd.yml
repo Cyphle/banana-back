@@ -26,11 +26,11 @@ jobs:
 
       - name: Patch image tag in manifest
         run: |
-          sed -i "s|${{ env.IMAGE_PATH }}:.*|${{ env.IMAGE_PATH }}:${{ github.event.inputs.version }}|" k8s/cloud/05-deployment.yaml
+          sed -i "s|${{ env.IMAGE_PATH }}:.*|${{ env.IMAGE_PATH }}:${{ github.event.inputs.version }}|" k8s/cloud/03-deployment.yaml
         working-directory: .
 
       - name: Apply Kubernetes manifest
         run: |
-          kubectl apply -n banana -f k8s/cloud/05-deployment.yaml
-          kubectl apply -n banana -f k8s/cloud/06-service.yaml
+          kubectl apply -n banana -f k8s/cloud/03-deployment.yaml
+          kubectl apply -n banana -f k8s/cloud/04-service.yaml
           kubectl rollout status deployment/banana-back --namespace banana --timeout=120s
