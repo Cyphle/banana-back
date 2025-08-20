@@ -1,4 +1,4 @@
-name: Deploy Banana Front
+name: Deploy Banana Back
 
 on:
   workflow_dispatch:
