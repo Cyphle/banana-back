@@ -109,7 +109,7 @@ spec:
                   key: REDIS_PASSWORD
 
             # OIDC
-            - name: BANANA_OIDC_REALM_URL
+            - name: BANANA_OIDC_URL
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
@@ -119,12 +119,12 @@ spec:
                 configMapKeyRef:
                   name: banana-back-config
                   key: OIDC_REALM
-            - name: BANANA_OIDC_URL_REDIRECT
+            - name: BANANA_OIDC_REDIRECT_URI
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: OIDC_REDIRECT_URI
-            - name: BANANA_OIDC_URL_LOGOUT
+            - name: BANANA_OIDC_LOGOUT_URI
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
