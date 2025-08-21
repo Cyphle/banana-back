@@ -9,10 +9,8 @@ database:
   password: "postgres"
 
 oidc:
-  realm:
-    url: "http://localhost:8181/realms/Banana"
-  url:
-    redirect: "http://localhost:9000/login"
+  url: "http://localhost:8181/realms/Banana"
+  redirect_uri: "http://localhost:9000/login"
 
 session:
   store_addr: "redis://127.0.0.1:6379"
