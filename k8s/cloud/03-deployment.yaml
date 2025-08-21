@@ -28,6 +28,11 @@ spec:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_HOST
+            - name: BANANA_DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: DB_HOST
             - name: BANANA_DB_PORT
               valueFrom:
                 configMapKeyRef:
