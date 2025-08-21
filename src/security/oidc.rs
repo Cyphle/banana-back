@@ -11,6 +11,7 @@ pub struct OidcConfig {
     pub logout_uri: String,
     pub admin: OidcAdminConfig,
 }
+
 impl Clone for OidcConfig {
     fn clone(&self) -> Self {
         Self {

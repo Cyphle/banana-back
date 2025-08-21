@@ -11,7 +11,7 @@ use crate::{
     config::{
         database::connect,
         local::{
-            database_config::get_database_config, oidc_config::get_oidc_config,
+            oidc_config::get_oidc_config,
             session_config::get_session_config,
         },
     },
@@ -31,6 +31,7 @@ use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 use std::task::ready;
 use std::{collections::HashMap, sync::Mutex};
+use crate::config::app_config::AppConfig;
 
 pub struct AppState {
     pub db_connection: &'static DatabaseConnection,
@@ -45,12 +46,14 @@ pub struct SessionConfig {
 }
 
 // TODO il faut remplacer ça par l'utilisation de app_conffig.rs
-pub async fn config() -> std::io::Result<()> {
+pub async fn config(application_configuration: &AppConfig) -> std::io::Result<()> {
     info!("Starting Actix server");
+
+    // TODO faut sortir pas mal de chose là et les passer en paramètres
 
     // Databse
     // TODO à priori, chatgpt conseille de faire un clone à envoyer à actix au lieu de faire un pointer box
-    let db = connect(&get_database_config()).await.unwrap();
+    let db = connect(&application_configuration.database).await.unwrap();
     let static_db = Box::leak(Box::new(db));
 
     // OIDC

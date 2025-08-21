@@ -2,52 +2,43 @@ use config::{Config, Environment, File};
 use serde::Deserialize;
 use std::env;
 use std::time::Duration;
+use crate::config::database::DatabaseConfig;
+use crate::config::session::SessionConfig;
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct DatabaseConfig {
-    pub host: String,
-    pub port: String,
-    pub schema: String,
-    pub username: String,
-    pub password: String,
-    pub max_connections: u32,
-    pub min_connections: u32,
-    pub connect_timeout: u64,
-    pub acquire_timeout: u64,
-    pub idle_timeout: u64,
-    pub max_lifetime: u64,
-    pub sqlx_logging: bool,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct DbConfig {
-    pub name: String,
-}
-
+// TODO à merge avec ce qui est dans le dossier security
 #[derive(Debug, Deserialize, Clone)]
 pub struct OidcAdminConfig {
-    pub client_id: String,
-    pub client_secret: String,
+    pub client: OidcClientConfig,
     pub create_user_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct OidcConfig {
-    pub realm_url: String,
-    pub realm: String,
-    pub client_secret: String,
-    pub login_url: String,
-    pub nonce: String,
-    pub session_timeout_minutes: i64,
-    pub base_url: String,
-    pub admin: OidcAdminConfig,
+pub struct OidcRealmConfig {
+    pub url: String,
+    pub name: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct SessionConfig {
-    pub store_addr: String,
-    pub cookie_name: String,
-    pub session_ttl_days: u64,
+pub struct OidcClientConfig {
+    pub id: String,
+    pub secret: String
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct OidcUrlConfig {
+    pub redirect: String,
+    pub logout: String,
+}
+
+// TODO à merge avec ce qui est dans le dossier security
+#[derive(Debug, Deserialize, Clone)]
+pub struct OidcConfig {
+    pub realm: OidcRealmConfig,
+    pub url: OidcUrlConfig,
+    pub client: OidcClientConfig,
+    pub nonce: String,
+    pub session_timeout_minutes: i64,
+    pub admin: OidcAdminConfig,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -63,7 +54,6 @@ pub struct CorsConfig {
 pub struct AppConfig {
     pub app: AppServerConfig,
     pub database: DatabaseConfig,
-    pub db: DbConfig,
     pub oidc: OidcConfig,
     pub session: SessionConfig,
     pub cors: CorsConfig,

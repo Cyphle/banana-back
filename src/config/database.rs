@@ -1,12 +1,14 @@
 use std::time::Duration;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+use serde::Deserialize;
 
+#[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseConfig {
-    pub host: &'static str,
-    pub port: &'static str,
-    pub schema: &'static str,
-    pub username: &'static str,
-    pub password: &'static str,
+    pub host: String,
+    pub port: String,
+    pub schema: String,
+    pub username: String,
+    pub password: String,
     pub max_connections: u32,
     pub min_connections: u32,
     pub connect_timeout: u64,
@@ -18,7 +20,7 @@ pub struct DatabaseConfig {
 
 pub async fn connect(config: &DatabaseConfig) -> Result<DatabaseConnection, DbErr> {
 
-    let mut opt = ConnectOptions::new("postgres://".to_string() + config.username + ":" + config.password + "@" + config.host + ":" + config.port + "/" + config.schema);
+    let mut opt = ConnectOptions::new("postgres://".to_string() + &config.username + ":" + &config.password + "@" + &config.host + ":" + &config.port + "/" + &config.schema);
     opt.max_connections(config.max_connections)
         .min_connections(config.min_connections)
         .connect_timeout(Duration::from_secs(config.connect_timeout))

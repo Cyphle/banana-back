@@ -23,117 +23,112 @@ spec:
               containerPort: 8080
           env:
             # Database
-            - name: BANANA_DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: banana-back-config
-                  key: DB_HOST
             - name: BANANA_DATABASE_HOST
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_HOST
-            - name: BANANA_DB_PORT
+            - name: BANANA_DATABASE_PORT
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_PORT
-            - name: BANANA_DB_NAME
+            - name: BANANA_DATABASE_NAME
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_NAME
-            - name: BANANA_DB_MAX_CONNECTIONS
+            - name: BANANA_DATABASE_MAX_CONNECTIONS
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_MAX_CONNECTIONS
-            - name: BANANA_DB_MIN_CONNECTIONS
+            - name: BANANA_DATABASE_MIN_CONNECTIONS
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_MIN_CONNECTIONS
-            - name: BANANA_DB_CONNECT_TIMEOUT
+            - name: BANANA_DATABASE_CONNECT_TIMEOUT
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_CONNECT_TIMEOUT
-            - name: BANANA_DB_ACQUIRE_TIMEOUT
+            - name: BANANA_DATABASE_ACQUIRE_TIMEOUT
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_ACQUIRE_TIMEOUT
-            - name: BANANA_DB_IDLE_TIMEOUT
+            - name: BANANA_DATABASE_IDLE_TIMEOUT
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_IDLE_TIMEOUT
-            - name: BANANA_DB_MAX_LIFETIME
+            - name: BANANA_DATABASE_MAX_LIFETIME
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_MAX_LIFETIME
-            - name: BANANA_DB_SQLX_LOGGING
+            - name: BANANA_DATABASE_SQLX_LOGGING
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: DB_SQLX_LOGGING
 
-            - name: BANANA_POSTGRES_USERNAME
+            - name: BANANA_DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: banana-secrets
                   key: POSTGRES_USERNAME
-            - name: BANANA_POSTGRES_PASSWORD
+            - name: BANANA_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: banana-secrets
                   key: POSTGRES_PASSWORD
 
             # Redis
-            - name: BANANA_REDIS_HOST
+            - name: BANANA_SESSION_DATABASE_HOST
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: REDIS_HOST
-            - name: BANANA_REDIS_PORT
+            - name: BANANA_SESSION_DATABASE_PORT
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: REDIS_PORT
 
-            - name: BANANA_REDIS_USERNAME
+            - name: BANANA_SESSION_DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: banana-secrets
                   key: REDIS_USERNAME
-            - name: BANANA_REDIS_PASSWORD
+            - name: BANANA_SESSION_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: banana-secrets
                   key: REDIS_PASSWORD
 
             # OIDC
-            - name: BANANA_OIDC_URL
+            - name: BANANA_OIDC_REALM_URL
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: OIDC_URL
-            - name: BANANA_OIDC_REDIRECT_URI
-              valueFrom:
-                configMapKeyRef:
-                  name: banana-back-config
-                  key: OIDC_REDIRECT_URI
-            - name: BANANA_OIDC_LOGOUT_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: banana-back-config
-                  key: OIDC_LOGOUT_URL
-            - name: BANANA_OIDC_REALM
+            - name: BANANA_OIDC_REALM_NAME
               valueFrom:
                 configMapKeyRef:
                   name: banana-back-config
                   key: OIDC_REALM
+            - name: BANANA_OIDC_URL_REDIRECT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_REDIRECT_URI
+            - name: BANANA_OIDC_URL_LOGOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: OIDC_LOGOUT_URL
 
             - name: BANANA_OIDC_CLIENT_ID
               valueFrom:

@@ -1,4 +1,3 @@
-# Configuration par défaut pour Banana Backend
 app:
   port: 9000
   host: "0.0.0.0"
@@ -17,26 +16,34 @@ database:
   max_lifetime: 8
   sqlx_logging: true
 
-db:
-  name: "xxx"
-
-oidc:
-  realm_url: "http://localhost:8181/realms/Banana"
-  realm: "banana"
-  client_secret: "banana-secret"
-  login_url: "http://localhost:9000/login"
-  nonce: "nonce"
-  session_timeout_minutes: 10
-  base_url: "http://localhost:9000"
-  admin:
-    client_id: "banana-admin"
-    client_secret: "banana-admin-secret"
-    create_user_url: "http://localhost:8181/admin/realms/Banana/users"
-
 session:
+  database:
+    host: "localhost"
+    port: "6379"
+    db: 0
+    username: ""
+    password: ""
   store_addr: "redis://127.0.0.1:6379"
   cookie_name: "actix_cookie"
   session_ttl_days: 5
+
+oidc:
+  realm:
+    url: "http://localhost:8181/realms/Banana"
+    name: "banana"
+  url:
+    redirect: "http://localhost:9000/login"
+    logout: "http://localhost:9000/logout"
+  client:
+    id: "banana"
+    secret: "banana-secret"
+  nonce: "nonce"
+  session_timeout_minutes: 10
+  admin:
+    client:
+      id: "banana-admin"
+      secret: "banana-admin-secret"
+    create_user_url: "http://localhost:8181/admin/realms/Banana/users"
 
 cors:
   allowed_origin: "http://localhost:9000"
