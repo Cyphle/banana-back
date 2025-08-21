@@ -22,6 +22,13 @@ struct AuthRequest {
 async fn main() -> std::io::Result<()> {
     config::logger::config();
 
+    // Affichage de toutes les variables d'environnement
+    info!("=== Variables d'environnement de l'application ===");
+    for (key, value) in std::env::vars() {
+        info!("{}={}", key, value);
+    }
+    info!("=== Fin des variables d'environnement ===");
+
     // Test de la nouvelle configuration
     match config::app_config::AppConfig::new() {
         Ok(config) => {
