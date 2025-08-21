@@ -28,12 +28,10 @@ session:
   session_ttl_days: 5
 
 oidc:
-  realm:
-    url: "http://localhost:8181/realms/Banana"
-    name: "banana"
-  url:
-    redirect: "http://localhost:9000/login"
-    logout: "http://localhost:9000/logout"
+  url: "http://localhost:8181/realms/Banana"
+  realm_name: "banana"
+  redirect_uri: "http://localhost:9000/login"
+  logout_uri: "http://localhost:9000/logout"
   client:
     id: "banana"
     secret: "banana-secret"
