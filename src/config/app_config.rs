@@ -1,5 +1,6 @@
 use config::{Config, Environment, File};
 use serde::Deserialize;
+use std::env;
 use std::time::Duration;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -85,7 +86,7 @@ impl AppConfig {
         let config = Config::builder()
             .add_source(File::with_name("config/default"))
             .add_source(File::with_name("config/local").required(false))
-            .add_source(Environment::with_prefix("BANANA"))
+            .add_source(Environment::with_prefix("BANANA").separator("_"))
             .build()?;
 
         config.try_deserialize()
