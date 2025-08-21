@@ -1,7 +1,7 @@
 use crate::config::actix::AppState;
 use crate::domain::profile::CreateProfileCommand;
 use crate::security::token::get_admin_access_token;
-use crate::{repositories, AuthRequest};
+use crate::{repositories};
 use actix_session::Session;
 use actix_web::web::Data;
 use actix_web::{get, post, web, HttpResponse, Responder};
@@ -10,6 +10,7 @@ use openid::{Client, Discovered, StandardClaims};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use crate::security::controllers::auth_request::AuthRequest;
 
 #[derive(Serialize)]
 struct KeycloakUser {

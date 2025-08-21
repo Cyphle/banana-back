@@ -1,6 +1,5 @@
 use crate::config::actix::AppState;
 use crate::config::local::oidc_config::USER_SESSION_KEY;
-use crate::AuthRequest;
 use actix_session::Session;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
@@ -8,6 +7,7 @@ use chrono::Duration;
 use log::{error, info};
 use openid::{Options, StandardClaims, Token, TokenIntrospection};
 use openid::error::Error::Http;
+use crate::security::controllers::auth_request::AuthRequest;
 
 #[get("/login")]
 async fn login(

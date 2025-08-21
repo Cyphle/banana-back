@@ -46,7 +46,7 @@ pub struct SessionConfig {
 }
 
 // TODO il faut remplacer ça par l'utilisation de app_conffig.rs
-pub async fn config(application_configuration: &AppConfig) -> std::io::Result<()> {
+pub async fn start(application_configuration: &AppConfig) -> std::io::Result<()> {
     info!("Starting Actix server");
 
     // TODO faut sortir pas mal de chose là et les passer en paramètres

@@ -3,8 +3,8 @@ use actix_web::{get, web, HttpResponse, Responder};
 use log::{error, info};
 use openid::{Bearer, Client, StandardClaims, Token, TokenIntrospection};
 use crate::config::local::oidc_config::USER_SESSION_KEY;
-use crate::AuthRequest;
 use crate::config::actix::AppState;
+use crate::security::controllers::auth_request::AuthRequest;
 use crate::security::controllers::logout::logout;
 use crate::security::token::{get_username_from_bearer};
 

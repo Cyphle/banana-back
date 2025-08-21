@@ -4,9 +4,9 @@ use actix_web::web::Data;
 use log::{debug, error, info};
 use openid::{Bearer, Client, Discovered, StandardClaims};
 use url::Url;
-use crate::AuthRequest;
 use crate::config::actix::AppState;
 use crate::config::local::oidc_config::USER_SESSION_KEY;
+use crate::security::controllers::auth_request::AuthRequest;
 
 #[get("/logout")]
 async fn logout(
