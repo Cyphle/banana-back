@@ -36,6 +36,7 @@ async fn main() -> std::io::Result<()> {
             info!("Port: {}", config.app.port);
             info!("Host: {}", config.app.host);
             info!("Base de données: {}:{}", config.database.host, config.database.port);
+            info!("Another db: {}", config.db.name);
             info!("OIDC Realm: {}", config.oidc.realm);
             info!("Session cookie: {}", config.session.cookie_name);
         }

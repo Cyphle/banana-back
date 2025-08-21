@@ -19,6 +19,11 @@ pub struct DatabaseConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct DbConfig {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct OidcAdminConfig {
     pub client_id: String,
     pub client_secret: String,
@@ -57,6 +62,7 @@ pub struct CorsConfig {
 pub struct AppConfig {
     pub app: AppServerConfig,
     pub database: DatabaseConfig,
+    pub db: DbConfig,
     pub oidc: OidcConfig,
     pub session: SessionConfig,
     pub cors: CorsConfig,

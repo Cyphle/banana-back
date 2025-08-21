@@ -17,6 +17,9 @@ database:
   max_lifetime: 8
   sqlx_logging: true
 
+db:
+  name: "xxx"
+
 oidc:
   realm_url: "http://localhost:8181/realms/Banana"
   realm: "banana"
