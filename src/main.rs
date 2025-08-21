@@ -38,8 +38,9 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
-    info!("Starting the application");
-    config::actix::config().await
+    // info!("Starting the application");
+    // config::actix::config().await
 
+    Result::Ok(())
     // TODO faudra trouver un moyen de close la connexion. Mais là on peut pas move la static_db
 }

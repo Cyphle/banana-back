@@ -8,7 +8,7 @@ resources:
 configMapGenerator:
 - name: keycloak-realm-config
   files:
-  - banana.json=../../../keycloak/realms/banana.json
+  - banana.json=../../docker-compose/keycloak/realms/banana.json
 
 generatorOptions:
   disableNameSuffixHash: true
