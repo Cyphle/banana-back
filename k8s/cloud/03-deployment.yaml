@@ -180,7 +180,7 @@ spec:
 
           resources:
             requests:
-              memory: "256m"
+              memory: "256Mi"
               cpu: "256m"
             limits:
               memory: "1Gi"
