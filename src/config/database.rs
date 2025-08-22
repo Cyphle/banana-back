@@ -6,6 +6,7 @@ use serde::Deserialize;
 pub struct DatabaseConfig {
     pub host: String,
     pub port: String,
+    pub name: String,
     pub schema: String,
     pub username: String,
     pub password: String,
@@ -20,7 +21,7 @@ pub struct DatabaseConfig {
 
 pub async fn connect(config: &DatabaseConfig) -> Result<DatabaseConnection, DbErr> {
 
-    let mut opt = ConnectOptions::new("postgres://".to_string() + &config.username + ":" + &config.password + "@" + &config.host + ":" + &config.port + "/" + &config.schema);
+    let mut opt = ConnectOptions::new("postgres://".to_string() + &config.username + ":" + &config.password + "@" + &config.host + ":" + &config.port + "/" + &config.name);
     opt.max_connections(config.max_connections)
         .min_connections(config.min_connections)
         .connect_timeout(Duration::from_secs(config.connect_timeout))

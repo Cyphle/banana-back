@@ -5,7 +5,8 @@ app:
 database:
   host: "localhost"
   port: "5434"
-  schema: "banana"
+  name: "banana"
+  schema: "public"
   username: "postgres"
   password: "postgres"
   max_connections: 100
