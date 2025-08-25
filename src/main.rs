@@ -15,6 +15,11 @@ mod security;
 async fn main() -> std::io::Result<()> {
     config::logger::config();
 
+    // Print all environment variables
+    for (key, value) in std::env::vars() {
+        info!("{}: {}", key, value);
+    }
+
     match config::app_config::AppConfig::new() {
         Ok(config) => {
             info!("Starting the application");
