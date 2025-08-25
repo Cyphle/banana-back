@@ -71,6 +71,16 @@ impl AppConfig {
         config.try_deserialize()
     }
 
+    pub fn get_session_url(&self) -> String {
+        format!(
+            "redis://{}:{}@{}:{}",
+            self.session.database.username,
+            self.session.database.password,
+            self.session.database.host,
+            self.session.database.port
+        )
+    }
+
     pub fn database_url(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",

@@ -64,7 +64,8 @@ pub async fn start(application_configuration: &AppConfig) -> std::io::Result<()>
     // Session
     let session_config = get_session_config();
     let secret_key = Key::from(&[0; 64]);
-    let redis_store = RedisSessionStore::new(session_config.store_addr)
+    // let redis_store = RedisSessionStore::new(session_config.store_addr)
+    let redis_store = RedisSessionStore::new(application_configuration.get_session_url())
         .await
         .unwrap();
 
