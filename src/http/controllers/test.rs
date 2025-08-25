@@ -84,7 +84,7 @@ mod tests {
             db_connection: db,
             oidc_client: None,
             store: Mutex::new(HashMap::<String, Bearer>::new()),
-            oidc_config: dummy_oidc_config(),
+            oidc_config: Some(dummy_oidc_config()),
         })
     }
 

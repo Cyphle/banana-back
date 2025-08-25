@@ -85,7 +85,7 @@ pub async fn start(application_configuration: &AppConfig) -> std::io::Result<()>
         App::new()
             .wrap(
                 Cors::default()
-                    .allowed_origin("http://localhost:9000") // Change to your frontend URL
+                    .allowed_origin("http://localhost:9000") // TODO Change to your frontend URL
                     .allowed_methods(vec!["GET", "POST"])
                     .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE])
                     .supports_credentials() // Optional, if credentials are used
@@ -119,7 +119,7 @@ pub async fn start(application_configuration: &AppConfig) -> std::io::Result<()>
             .service(live)
             .service(ready)
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
