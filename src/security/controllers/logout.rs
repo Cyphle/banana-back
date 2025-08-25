@@ -14,35 +14,36 @@ async fn logout(
     state: Data<AppState>,
     _: web::Query<AuthRequest>,
 ) -> impl Responder {
-    let user_session = session.get::<Bearer>(USER_SESSION_KEY);
-    let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
-    let logout_uri: &str = state.oidc_config.logout_uri.as_ref();
-
-    match user_session {
-        Ok(bearer_opt) => match bearer_opt {
-            Some(bearer) => {
-                match build_logout_url(&client, &bearer.clone().id_token.unwrap(), logout_uri).await {
-                    Ok(logout_url) => {
-                        session.remove(USER_SESSION_KEY);
-                        info!("Redirecting to logout URL: {}", logout_url);
-                        return HttpResponse::Found()
-                            .append_header(("Location", logout_url.to_string()))
-                            .finish();
-                    }
-                    Err(e) => {
-                        error!("Error generating logout URL: {}", e);
-                        session.remove(USER_SESSION_KEY);
-                    }
-                }
-            }
-            None => {
-                error!("No session data found");
-            }
-        },
-        Err(e) => {
-            error!("No session data found: {}", e);
-        }
-    }
+    // TODO remettre oidc
+    // let user_session = session.get::<Bearer>(USER_SESSION_KEY);
+    // let client = state.oidc_client.as_ref().unwrap().lock().unwrap();
+    // let logout_uri: &str = state.oidc_config.logout_uri.as_ref();
+    //
+    // match user_session {
+    //     Ok(bearer_opt) => match bearer_opt {
+    //         Some(bearer) => {
+    //             match build_logout_url(&client, &bearer.clone().id_token.unwrap(), logout_uri).await {
+    //                 Ok(logout_url) => {
+    //                     session.remove(USER_SESSION_KEY);
+    //                     info!("Redirecting to logout URL: {}", logout_url);
+    //                     return HttpResponse::Found()
+    //                         .append_header(("Location", logout_url.to_string()))
+    //                         .finish();
+    //                 }
+    //                 Err(e) => {
+    //                     error!("Error generating logout URL: {}", e);
+    //                     session.remove(USER_SESSION_KEY);
+    //                 }
+    //             }
+    //         }
+    //         None => {
+    //             error!("No session data found");
+    //         }
+    //     },
+    //     Err(e) => {
+    //         error!("No session data found: {}", e);
+    //     }
+    // }
 
     HttpResponse::Ok()
         .body("Logged out")
