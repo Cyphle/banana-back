@@ -151,6 +151,13 @@ spec:
                   name: banana-secrets
                   key: OIDC_ADMIN_CLIENT_SECRET
 
+            # DEBUG
+            - name: RUST_BACKTRACE
+              valueFrom:
+                configMapKeyRef:
+                  name: banana-back-config
+                  key: RUST_BACKTRACE
+
           livenessProbe:
             httpGet:
               path: /health/live
