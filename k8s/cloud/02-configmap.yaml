@@ -20,4 +20,4 @@ data:
   OIDC_REDIRECT_URI: "api.bananaam.fr/login"
   OIDC_LOGOUT_URL: "api.bananaam.fr/logout"
   OIDC_REALM: "banana"
-  RUST_BACKTRACE: "1"
+  RUST_BACKTRACE: "0"
