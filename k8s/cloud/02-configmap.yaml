@@ -14,7 +14,7 @@ data:
   DB_IDLE_TIMEOUT: "8"
   DB_MAX_LIFETIME: "8"
   DB_SQLX_LOGGING: "true"
-  REDIS_HOST: "172.16.16.8"
+  REDIS_HOST: "172.16.16.7"
   REDIS_PORT: "6379"
   OIDC_URL: "keycloak:8081"
   OIDC_REDIRECT_URI: "api.bananaam.fr/login"
